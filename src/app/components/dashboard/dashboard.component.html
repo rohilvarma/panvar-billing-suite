@@ -1,0 +1,20 @@
+<section id="vendorGrid">
+  <h1 class="font-bold text-xl mb-4">
+    My Publications
+  </h1>
+  <div pRipple class="grid grid-cols-4 gap-2">
+    @for (item of this.vendorDetails(); track $index) {
+    <div class="">
+      <div class="bg-white rounded-lg p-4 cursor-pointer" [routerLink]="['/vendor', item.id]">
+        <div class="font-bold fs-5">
+          {{ item.publicationName }}
+        </div>
+        <small class="text-stone-400 text-end">
+          <div class="text-stone-600 italic">- {{ item.contactPerson }}</div>
+          <div class="">( {{ item.email }})</div>
+        </small>
+      </div>
+    </div>
+    }
+  </div>
+</section>
