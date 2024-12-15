@@ -5,6 +5,15 @@ export const paginationOptions = {
   rowsPerPageOptions: [5, 10, 15]
 }
 
+export enum ToastSeverity {
+  SUCCESS = 'success',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+  SECONDARY = 'secondary',
+  CONTRAST = 'contrast'
+}
+
 export const sampleVendors: IVendor[] = [
   {
     id: "TOINN001",

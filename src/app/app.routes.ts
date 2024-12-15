@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './utils/auth-guard/auth.guard';
 
 export const routes: Routes = [
   {
@@ -7,12 +8,23 @@ export const routes: Routes = [
       import('./components/dashboard/dashboard.component').then(
         (c) => c.DashboardComponent
       ),
+    title: 'Panvar Billing Suite',
+    canActivate: [authGuard],
   },
   {
     path: 'login',
     loadComponent: () =>
-      import('./components/authentication/authentication.component').then(
-        (m) => m.AuthenticationComponent
+      import('./components/login/login.component').then(
+        (m) => m.LoginComponent
       ),
+    title: 'Log in',
+  },
+  {
+    path: 'signup',
+    loadComponent: () =>
+      import('./components/sign-up/sign-up.component').then(
+        (c) => c.SignUpComponent
+      ),
+    title: 'Sign up',
   },
 ];
