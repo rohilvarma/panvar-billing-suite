@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthResponse, isAuthApiError } from '@supabase/supabase-js';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -30,54 +30,73 @@ import { ToastSeverity } from '../../utils/constants';
     ReactiveFormsModule,
     PasswordModule,
     Toast,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css',
-  providers: [ToastService, MessageService]
+  providers: [ToastService, MessageService],
 })
 export class SignUpComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = new FormGroup({});
 
+  private _router: Router = inject(Router);
   private _subscriptionManager: Subscription = new Subscription();
-  private _toastService = inject(ToastService)
+  private _toastService = inject(ToastService);
   private _supabase: SupabaseService = inject(SupabaseService);
 
   ngOnInit(): void {
-    this.formGroup = new FormGroup({
-      email: new FormControl<string | null>(null, [
-        Validators.required,
-        Validators.email,
-      ]),
-      password: new FormControl<string | null>(null, [
-        Validators.required,
-        Validators.minLength(8),
-      ]),
-    });
+    if(this._supabase.session) {
+      this._router.navigate(['/']);
+    }
+    else {
+
+      this.formGroup = new FormGroup({
+        email: new FormControl<string | null>(null, [
+          Validators.required,
+          Validators.email,
+        ]),
+        password: new FormControl<string | null>(null, [
+          Validators.required,
+          Validators.minLength(8),
+        ]),
+      });
+    }
   }
   public signup(): void {
     if (this.formGroup.valid) {
       const email = this.formGroup.get('email')?.value;
       const password = this.formGroup.get('password')?.value;
+
       this._subscriptionManager.add(
         this._supabase.signup(email, password).subscribe({
           next: (response: AuthResponse) => {
             const { data, error } = response;
-            if(isAuthApiError(error)) {
+            if (isAuthApiError(error)) {
               this._toastService.addToast(
                 ToastSeverity.ERROR,
-                error.name, error.message
-              )
+                error.name,
+                error.message,
+                error.status,
+              );
+            }
+
+            if (data !== null && data.user !== null) {
+              this._toastService.addToast(
+                ToastSeverity.SUCCESS,
+                'Success',
+                'Please go to the email to verify your account.'
+              );
+              this.formGroup.reset();
             }
           },
-          error: (err) => {
+          error: (err: any) => {
             this._toastService.addToast(
               ToastSeverity.ERROR,
-              err.name, err.message
-            )
-          },
-          complete: () => {
-            
+              err.status,
+              err.code,
+              err.name,
+              err.message
+            );
           },
         })
       );

@@ -6,15 +6,21 @@ import { MessageService } from 'primeng/api';
 })
 export class ToastService {
   private _messageService: MessageService = inject(MessageService);
-  constructor() { }
+  constructor() {}
 
-  public addToast(type: string, header: string, message: string): void {
+  public addToast(
+    severity: string,
+    header: string,
+    message: string,
+    status?: number | undefined,
+    code?: string | undefined
+  ): void {
     this._messageService.add({
-      severity: type,
-      summary: header,
-      detail: message,
-      life: 3000
-    })
+      severity: severity,
+      summary: status === undefined ? header : `${status}: ${header}`,
+      detail: code === undefined ? message : `${code}: ${message}`,
+      life: 3000,
+    });
   }
 
   public clear(): void {

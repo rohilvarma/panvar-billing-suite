@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './utils/auth-guard/auth.guard';
+import { AuthGuard } from './utils/auth-guard/auth.guard';
 
 export const routes: Routes = [
   {
@@ -9,7 +9,7 @@ export const routes: Routes = [
         (c) => c.DashboardComponent
       ),
     title: 'Panvar Billing Suite',
-    canActivate: [authGuard],
+    canActivate: [AuthGuard],
   },
   {
     path: 'login',
@@ -27,4 +27,16 @@ export const routes: Routes = [
       ),
     title: 'Sign up',
   },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./components/not-found/not-found.component').then(
+        (c) => c.NotFoundComponent
+      ),
+    title: 'Not Found',
+  },
+  {
+    path: "**",
+    redirectTo: "not-found"
+  }
 ];
