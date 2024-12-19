@@ -44,24 +44,19 @@ export class LoginComponent implements OnInit, OnDestroy {
   private _subscriptionManager: Subscription = new Subscription();
   private _supabase: SupabaseService = inject(SupabaseService);
   ngOnInit(): void {
-    if(this._supabase.session) {
-      this._router.navigate(['/']);
-    }
-    else {
-      this.formGroup = new FormGroup({
-        email: new FormControl<string | null>(null, [
-          Validators.required,
-          Validators.email,
-        ]),
-        password: new FormControl<string | null>(null, [
-          Validators.required,
-          Validators.minLength(8),
-        ]),
-      });
-    }
+    this.formGroup = new FormGroup({
+      email: new FormControl<string | null>(null, [
+        Validators.required,
+        Validators.email,
+      ]),
+      password: new FormControl<string | null>(null, [
+        Validators.required,
+        Validators.minLength(8),
+      ]),
+    });
   }
 
-  public login() {
+  public login(): void {
     if (this.formGroup.valid) {
       const email = this.formGroup.get('email')?.value;
       const password = this.formGroup.get('password')?.value;

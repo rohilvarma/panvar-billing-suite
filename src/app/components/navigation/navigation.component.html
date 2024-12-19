@@ -7,7 +7,7 @@
         </h1>
       </div>
       <div class="flex items-center gap-2">
-        @if (this.session) {
+        @if (this.session()) {
         <p-button
           label="Log Out"
           size="small"

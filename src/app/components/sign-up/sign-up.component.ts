@@ -45,22 +45,16 @@ export class SignUpComponent implements OnInit, OnDestroy {
   private _supabase: SupabaseService = inject(SupabaseService);
 
   ngOnInit(): void {
-    if(this._supabase.session) {
-      this._router.navigate(['/']);
-    }
-    else {
-
-      this.formGroup = new FormGroup({
-        email: new FormControl<string | null>(null, [
-          Validators.required,
-          Validators.email,
-        ]),
-        password: new FormControl<string | null>(null, [
-          Validators.required,
-          Validators.minLength(8),
-        ]),
-      });
-    }
+    this.formGroup = new FormGroup({
+      email: new FormControl<string | null>(null, [
+        Validators.required,
+        Validators.email,
+      ]),
+      password: new FormControl<string | null>(null, [
+        Validators.required,
+        Validators.minLength(8),
+      ]),
+    });
   }
   public signup(): void {
     if (this.formGroup.valid) {
@@ -87,6 +81,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
                 'Please go to the email to verify your account.'
               );
               this.formGroup.reset();
+              this._router.navigate(['/']);
             }
           },
           error: (err: any) => {
