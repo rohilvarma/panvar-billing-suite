@@ -1,1 +1,25 @@
-<p>vendor-details works!</p>
+<section id="header">
+  <div class="flex items-center justify-between">
+    <div class="text-xl font-bold">
+      {{ this.vendor().name }}
+    </div>
+    <div class="">
+      <!-- <p-button
+        pRipple
+        label="New Invoice"
+        icon="pi pi-plus"
+        iconPos="right"
+        size="small"
+        (click)="this.showAddInvoiceDialog()"
+      /> -->
+    </div>
+  </div>
+</section>
+
+<section id="vendorGrid" class="mt-2">
+  <ag-grid-angular
+    class="ag-theme-quartz"
+    style="height: 600px"
+    [gridOptions]="this.gridOptions"
+  />
+</section>

@@ -16,7 +16,9 @@ import { environments } from "../../../environments/environments";
   providedIn: "root",
 })
 export class SupabaseService {
-  public _session = new BehaviorSubject<AuthSession | null>(null);
+  public _session = new BehaviorSubject<AuthSession | null>(
+    JSON.parse(localStorage.getItem("supabase.auth.token") || "null"),
+  );
   private _supabase: SupabaseClient;
 
   constructor() {
@@ -27,17 +29,32 @@ export class SupabaseService {
         auth: {
           persistSession: true, // Ensures session is saved across browser reloads
           autoRefreshToken: true, // Automatically refreshes session tokens
+          storageKey: "supabase.auth.token",
+          storage: window.localStorage,
         },
       },
     );
 
-    this._supabase.auth.getSession().then(({ data }) => {
-      this._session.next(data.session);
-    });
+    this.initSession();
+  }
 
-    this._supabase.auth.onAuthStateChange((event, session) => {
-      this._session.next(session); // Update session when it changes
-    });
+  private async initSession() {
+    let initialSession = null;
+    try {
+      const {
+        data: { session },
+      } = await this._supabase.auth.getSession();
+      initialSession = session;
+
+      this._supabase.auth.onAuthStateChange((event, session) => {
+        this._session.next(session);
+      });
+    } catch (error) {
+      console.error("Error initializing session:", error);
+      this._session.next(null);
+    } finally {
+      this._session.next(initialSession);
+    }
   }
 
   get session$() {

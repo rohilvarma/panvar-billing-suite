@@ -1,42 +1,51 @@
-import { Routes } from '@angular/router';
-import { AuthGuard } from './utils/auth-guard/auth.guard';
+import { Routes } from "@angular/router";
+import { AuthGuard } from "./utils/guards/auth/auth.guard";
 
 export const routes: Routes = [
   {
-    path: '',
+    path: "",
     loadComponent: () =>
-      import('./components/dashboard/dashboard.component').then(
-        (c) => c.DashboardComponent
+      import("./components/dashboard/dashboard.component").then(
+        (c) => c.DashboardComponent,
       ),
-    title: 'Panvar Billing Suite',
+    title: "Panvar Billing Suite",
     canActivate: [AuthGuard],
   },
   {
-    path: 'login',
+    path: "vendor/:id",
     loadComponent: () =>
-      import('./components/login/login.component').then(
-        (m) => m.LoginComponent
+      import("./components/vendor-details/vendor-details.component").then(
+        (c) => c.VendorDetailsComponent,
       ),
-    title: 'Log in',
+    title: "Vendors",
+    canActivate: [AuthGuard],
   },
   {
-    path: 'signup',
+    path: "login",
     loadComponent: () =>
-      import('./components/sign-up/sign-up.component').then(
-        (c) => c.SignUpComponent
+      import("./components/login/login.component").then(
+        (m) => m.LoginComponent,
       ),
-    title: 'Sign up',
+    title: "Log in",
   },
   {
-    path: 'not-found',
+    path: "signup",
     loadComponent: () =>
-      import('./components/not-found/not-found.component').then(
-        (c) => c.NotFoundComponent
+      import("./components/sign-up/sign-up.component").then(
+        (c) => c.SignUpComponent,
       ),
-    title: 'Not Found',
+    title: "Sign up",
+  },
+  {
+    path: "not-found",
+    loadComponent: () =>
+      import("./components/not-found/not-found.component").then(
+        (c) => c.NotFoundComponent,
+      ),
+    title: "Not Found",
   },
   {
     path: "**",
-    redirectTo: "not-found"
-  }
+    redirectTo: "not-found",
+  },
 ];
