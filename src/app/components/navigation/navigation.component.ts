@@ -3,7 +3,7 @@ import { Router, RouterLink } from "@angular/router";
 import { AuthSession } from "@supabase/supabase-js";
 import { ButtonModule } from "primeng/button";
 import { Subscription } from "rxjs";
-import { SupabaseService } from "../../services/supabase/supabase.service";
+import {AuthService} from '../../services/auth/auth.service';
 
 @Component({
   selector: "app-navigation",
@@ -16,17 +16,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
   public session = signal<AuthSession | null>(null);
 
   private _router: Router = inject(Router);
-  private _supabase: SupabaseService = inject(SupabaseService);
+  private _auth: AuthService = inject(AuthService);
   private _subscriptionManager: Subscription = new Subscription();
   ngOnInit(): void {
-    this._supabase.session$.subscribe((session) => {
+    this._auth.session$.subscribe((session) => {
       this.session.set(session);
     });
   }
 
   public logout(): void {
     this._subscriptionManager.add(
-      this._supabase.logout().subscribe((response) => {
+      this._auth.logout().subscribe((response) => {
         this._router.navigate(["/login"]);
       }),
     );

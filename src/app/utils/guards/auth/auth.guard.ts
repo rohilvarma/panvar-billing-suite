@@ -1,11 +1,11 @@
-import { inject } from "@angular/core";
-import { CanActivateFn, Router } from "@angular/router";
-import { SupabaseService } from "../../../services/supabase/supabase.service";
-import { map } from "rxjs";
+import {inject} from "@angular/core";
+import {CanActivateFn, Router} from "@angular/router";
+import {map} from "rxjs";
+import {AuthService} from '../../../services/auth/auth.service';
 
 export const AuthGuard: CanActivateFn = (route, state) => {
   const router: Router = inject(Router);
-  const supabase: SupabaseService = inject(SupabaseService);
+  const supabase: AuthService = inject(AuthService);
 
   return supabase.session$.pipe(
     map((session) => {

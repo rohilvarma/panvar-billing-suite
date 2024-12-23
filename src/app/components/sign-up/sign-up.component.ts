@@ -15,9 +15,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { Toast } from 'primeng/toast';
 import { Subscription } from 'rxjs';
-import { SupabaseService } from '../../services/supabase/supabase.service';
 import { ToastService } from '../../services/toast/toast.service';
 import { ToastSeverity } from '../../utils/constants';
+import {AuthService} from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-sign-up',
@@ -42,7 +42,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   private _router: Router = inject(Router);
   private _subscriptionManager: Subscription = new Subscription();
   private _toastService = inject(ToastService);
-  private _supabase: SupabaseService = inject(SupabaseService);
+  private _auth: AuthService = inject(AuthService);
 
   ngOnInit(): void {
     this.formGroup = new FormGroup({
@@ -62,7 +62,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
       const password = this.formGroup.get('password')?.value;
 
       this._subscriptionManager.add(
-        this._supabase.signup(email, password).subscribe({
+        this._auth.signup(email, password).subscribe({
           next: (response: AuthResponse) => {
             const { data, error } = response;
             if (isAuthApiError(error)) {

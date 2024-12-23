@@ -1,21 +1,20 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
+import {BehaviorSubject, from, Observable} from 'rxjs';
 import {
-  AuthChangeEvent,
-  AuthError,
+  AuthChangeEvent, AuthError,
   AuthResponse,
   AuthSession,
   AuthTokenResponsePassword,
   createClient,
   Session,
-  SupabaseClient,
-} from "@supabase/supabase-js";
-import { BehaviorSubject, from, Observable } from "rxjs";
-import { environments } from "../../../environments/environments";
+  SupabaseClient
+} from '@supabase/supabase-js';
+import {environments} from '../../../environments/environments';
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root'
 })
-export class SupabaseService {
+export class AuthService {
   public _session = new BehaviorSubject<AuthSession | null>(
     JSON.parse(localStorage.getItem("supabase.auth.token") || "null"),
   );

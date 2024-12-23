@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import {Component, inject, OnDestroy, OnInit, signal, WritableSignal} from "@angular/core";
 import { IVendor, IVendorDetails } from "../../interfaces/vendor-detail.interface";
 import { paginationOptions, sampleVendorDetails, sampleVendors } from "../../utils/constants";
 import { ButtonModule } from "primeng/button";
@@ -22,13 +22,13 @@ interface Column {
   styleUrl: "./vendor-details.component.css",
 })
 export class VendorDetailsComponent implements OnInit, OnDestroy {
-  public vendor = signal<IVendor>({} as IVendor);
-  public vendorDetails = signal<IVendorDetails[]>([]);
-  
+  public vendor: WritableSignal<IVendor> = signal<IVendor>({} as IVendor);
+  public vendorDetails: WritableSignal<IVendorDetails[]> = signal<IVendorDetails[]>([]);
+
   public isAddInvoiceDialogOpen: boolean = false;
 
   public gridOptions!: GridOptions;
-  private gridApi: GridApi = {} as GridApi;;
+  private gridApi: GridApi = {} as GridApi;
   private _route: ActivatedRoute = inject(ActivatedRoute);
 
   ngOnInit(): void {
@@ -95,7 +95,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
       },
     };
   }
-  
+
   private fetchVendorDetails(): void {
     this.vendorDetails.set(sampleVendorDetails);
     const columns: Column[] = Object.keys(this.vendorDetails()[0]).map(
