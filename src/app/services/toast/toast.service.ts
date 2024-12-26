@@ -5,7 +5,7 @@ import { MessageService } from 'primeng/api';
   providedIn: 'root',
 })
 export class ToastService {
-  private _messageService: MessageService = inject(MessageService);
+  private messageService: MessageService = inject(MessageService);
   constructor() {}
 
   public addToast(
@@ -15,7 +15,7 @@ export class ToastService {
     status?: number | undefined,
     code?: string | undefined
   ): void {
-    this._messageService.add({
+    this.messageService.add({
       severity: severity,
       summary: status === undefined ? header : `${status}: ${header}`,
       detail: code === undefined ? message : `${code}: ${message}`,
@@ -24,6 +24,6 @@ export class ToastService {
   }
 
   public clear(): void {
-    this._messageService.clear();
+    this.messageService.clear();
   }
 }

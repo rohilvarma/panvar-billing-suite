@@ -1,4 +1,4 @@
-import { IVendor, IVendorDetails } from "../interfaces/vendor-detail.interface";
+import { IVendorDetails } from "../interfaces/vendor-detail.interface";
 
 export const paginationOptions = {
   rows: 10,
@@ -13,79 +13,6 @@ export enum ToastSeverity {
   SECONDARY = 'secondary',
   CONTRAST = 'contrast'
 }
-
-export const sampleVendors: IVendor[] = [
-  {
-    id: "TOINN001",
-    name: "Times of India News Network",
-    publicationName: "Times of India",
-    contactPerson: "Rohan Sharma",
-    email: "rohan.sharma@timesofindia.com"
-  },
-  {
-    id: "HTCM002",
-    name: "HT City Media",
-    publicationName: "HT City",
-    contactPerson: "Priya Jain",
-    email: "priya.jain@htcity.com"
-  },
-  {
-    id: "THBL003",
-    name: "The Hindu Business Line",
-    publicationName: "The Hindu Business Line",
-    contactPerson: "Karthik Rao",
-    email: "karthik.rao@thehindubusinessline.com"
-  },
-  {
-    id: "ITG004",
-    name: "India Today Group",
-    publicationName: "India Today",
-    contactPerson: "Rakesh Kumar",
-    email: "rakesh.kumar@indiatodaygroup.com"
-  },
-  {
-    id: "ET005",
-    name: "The Economic Times",
-    publicationName: "The Economic Times",
-    contactPerson: "Suresh Menon",
-    email: "suresh.menon@economictimes.com"
-  },
-  {
-    id: "HT006",
-    name: "Hindustan Times",
-    publicationName: "Hindustan Times",
-    contactPerson: "Anjali Singh",
-    email: "anjali.singh@hindustantimes.com"
-  },
-  {
-    id: "TIE007",
-    name: "The Indian Express",
-    publicationName: "The Indian Express",
-    contactPerson: "Vivek Gupta",
-    email: "vivek.gupta@indianexpress.com"
-  },
-  {
-    id: "MDI008",
-    name: "Mid-Day Infomedia",
-    publicationName: "Mid-Day",
-    contactPerson: "Rahul Desai",
-    email: "rahul.desai@mid-day.com"
-  },
-  {
-    id: "DNAM009",
-    name: "DNA Media",
-    publicationName: "DNA",
-    contactPerson: "Nalini Singh",
-    email: "nalini.singh@dnaindia.com"
-  },
-  {
-    id: "DCH010",
-    name: "Deccan Chronicle Holdings",
-    publicationName: "Deccan Chronicle",
-    contactPerson: "Srinivas Reddy",
-    email: "srinivas.reddy@deccanchronicle.com"
-  }
-];
 
 export const sampleVendorDetails: IVendorDetails[] = [
   {

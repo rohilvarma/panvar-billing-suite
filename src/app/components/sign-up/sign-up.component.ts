@@ -39,10 +39,10 @@ import {AuthService} from '../../services/auth/auth.service';
 export class SignUpComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = new FormGroup({});
 
-  private _router: Router = inject(Router);
-  private _subscriptionManager: Subscription = new Subscription();
-  private _toastService = inject(ToastService);
-  private _auth: AuthService = inject(AuthService);
+  private router: Router = inject(Router);
+  private subscriptionManager: Subscription = new Subscription();
+  private toastService = inject(ToastService);
+  private auth: AuthService = inject(AuthService);
 
   ngOnInit(): void {
     this.formGroup = new FormGroup({
@@ -61,12 +61,12 @@ export class SignUpComponent implements OnInit, OnDestroy {
       const email = this.formGroup.get('email')?.value;
       const password = this.formGroup.get('password')?.value;
 
-      this._subscriptionManager.add(
-        this._auth.signup(email, password).subscribe({
+      this.subscriptionManager.add(
+        this.auth.signup(email, password).subscribe({
           next: (response: AuthResponse) => {
             const { data, error } = response;
             if (isAuthApiError(error)) {
-              this._toastService.addToast(
+              this.toastService.addToast(
                 ToastSeverity.ERROR,
                 error.name,
                 error.message,
@@ -75,17 +75,17 @@ export class SignUpComponent implements OnInit, OnDestroy {
             }
 
             if (data !== null && data.user !== null) {
-              this._toastService.addToast(
+              this.toastService.addToast(
                 ToastSeverity.SUCCESS,
                 'Success',
                 'Please go to the email to verify your account.'
               );
               this.formGroup.reset();
-              this._router.navigate(['/']);
+              this.router.navigate(['/']);
             }
           },
           error: (err: any) => {
-            this._toastService.addToast(
+            this.toastService.addToast(
               ToastSeverity.ERROR,
               err.status,
               err.code,
@@ -101,6 +101,6 @@ export class SignUpComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptionManager.unsubscribe();
+    this.subscriptionManager.unsubscribe();
   }
 }

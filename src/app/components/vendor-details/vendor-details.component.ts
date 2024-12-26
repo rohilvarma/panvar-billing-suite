@@ -1,6 +1,6 @@
 import {Component, inject, OnDestroy, OnInit, signal, WritableSignal} from "@angular/core";
 import { IVendor, IVendorDetails } from "../../interfaces/vendor-detail.interface";
-import { paginationOptions, sampleVendorDetails, sampleVendors } from "../../utils/constants";
+import { paginationOptions, sampleVendorDetails } from "../../utils/constants";
 import { ButtonModule } from "primeng/button";
 import { RippleModule } from "primeng/ripple";
 import { ActivatedRoute } from "@angular/router";
@@ -29,12 +29,12 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
 
   public gridOptions!: GridOptions;
   private gridApi: GridApi = {} as GridApi;
-  private _route: ActivatedRoute = inject(ActivatedRoute);
+  private route: ActivatedRoute = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    const vendorId = this._route.snapshot.params["id"];
+    const vendorId = this.route.snapshot.params["id"];
 
-    this.vendor.set(sampleVendors.find((v: IVendor) => v.id === vendorId)!);
+    // this.vendor.set(sampleVendors.find((v: IVendor) => v.id === vendorId)!);
 
     this.initialiseGridOptions();
     this.fetchVendorDetails();
@@ -97,11 +97,11 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   }
 
   private fetchVendorDetails(): void {
-    this.vendorDetails.set(sampleVendorDetails);
-    const columns: Column[] = Object.keys(this.vendorDetails()[0]).map(
-      (key) => ({ field: key, header: key })
-    );
-    this.gridOptions.rowData = this.vendorDetails();
+    // this.vendorDetails.set(sampleVendorDetails);
+    // const columns: Column[] = Object.keys(this.vendorDetails()[0]).map(
+    //   (key) => ({ field: key, header: key })
+    // );
+    // this.gridOptions.rowData = this.vendorDetails();
   }
 
   ngOnDestroy(): void {}

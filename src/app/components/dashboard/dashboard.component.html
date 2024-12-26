@@ -1,20 +1,72 @@
 <section id="vendorGrid">
-  <h1 class="font-bold text-xl mb-4">
-    My Publications
-  </h1>
-  <div pRipple class="grid grid-cols-4 gap-2">
-    @for (item of this.vendorDetails(); track $index) {
-    <div class="">
-      <div class="bg-white rounded-lg p-4 cursor-pointer" [routerLink]="['/vendor', item.id]">
-        <div class="font-bold fs-5">
-          {{ item.publicationName }}
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="font-bold text-xl">My Publications</h1>
+    <p-button
+      label="Add Vendor"
+      icon="pi pi-plus"
+      size="small"
+      iconPos="right"
+      (click)="this.showAddVendorDialog()"
+    />
+  </div>
+  <div class="grid grid-cols-4 gap-2">
+    @if (this.vendorDetails().length === 0) {
+      @for (_ of this.counterArray(3); track $index) {
+        <div class="bg-white rounded-lg p-4">
+          <p-skeleton styleClass="mb-2" />
+          <p-skeleton styleClass="mb-2" />
         </div>
-        <small class="text-stone-400 text-end">
-          <div class="text-stone-600 italic">- {{ item.contactPerson }}</div>
-          <div class="">({{ item.email }})</div>
-        </small>
-      </div>
-    </div>
+      }
+    } @else {
+      @for (item of this.vendorDetails(); track $index) {
+        <div class="">
+          <div
+            class="bg-white rounded-lg p-4 cursor-pointer"
+            [routerLink]="['/vendor', item.id]"
+          >
+            <div class="font-bold fs-5">
+              {{ item.publication_name }}
+            </div>
+            <small class="text-stone-400 text-end">
+              <div class="text-stone-600 italic">- {{ item.email }}</div>
+            </small>
+          </div>
+        </div>
+      }
     }
   </div>
 </section>
+
+<p-dialog
+  header="Add New Vendor"
+  [modal]="true"
+  [(visible)]="this.isAddVendorDialogVisible"
+  [style]="{ width: '50rem' }"
+>
+  <form [formGroup]="this.newVendorForm" class="">
+    <div class="mb-6">
+      <label for="name" class="font-bold">Name:</label>
+      <input pInputText formControlName="name" id="name" type="text" class="w-full">
+      @if (this.newVendorForm.get('name')?.invalid && this.newVendorForm.get('name')?.touched) {
+        <small class="text-red-500">Please enter a valid name.</small>
+      }
+    </div>
+    <div class="mb-6">
+      <label for="publication_name" class="font-bold">Publication Name:</label>
+      <input pInputText formControlName="publication_name" id="publication_name" type="text" class="w-full">
+      @if (this.newVendorForm.get('publication_name')?.invalid && this.newVendorForm.get('publication_name')?.touched) {
+        <small class="text-red-500">Please enter a valid publication name.</small>
+      }
+    </div>
+    <div class="mb-6">
+      <label for="email" class="font-bold">Email:</label>
+      <input pInputText formControlName="email" id="email" type="email" class="w-full">
+      @if (this.newVendorForm.get('email')?.invalid && this.newVendorForm.get('email')?.touched) {
+        <small class="text-red-500">Please enter a valid email address.</small>
+      }
+    </div>
+    <div class="">
+      <p-button label="Add" [severity]="" (click)="this.addNewVendor()"  />
+    </div>
+  </form>
+</p-dialog>

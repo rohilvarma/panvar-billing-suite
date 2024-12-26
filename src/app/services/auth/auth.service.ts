@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {BehaviorSubject, from, Observable} from 'rxjs';
 import {
-  AuthChangeEvent, AuthError,
+  AuthChangeEvent,
+  AuthError,
   AuthResponse,
   AuthSession,
   AuthTokenResponsePassword,
   createClient,
   Session,
-  SupabaseClient
+  SupabaseClient,
+  UserResponse
 } from '@supabase/supabase-js';
 import {environments} from '../../../environments/environments';
 
@@ -15,13 +17,14 @@ import {environments} from '../../../environments/environments';
   providedIn: 'root'
 })
 export class AuthService {
-  public _session = new BehaviorSubject<AuthSession | null>(
+  private session = new BehaviorSubject<AuthSession | null>(
     JSON.parse(localStorage.getItem("supabase.auth.token") || "null"),
   );
-  private _supabase: SupabaseClient;
+  private userId = new BehaviorSubject<string | null>(null);
+  private supabase: SupabaseClient;
 
   constructor() {
-    this._supabase = createClient(
+    this.supabase = createClient(
       environments.supabaseUrl,
       environments.supabaseKey,
       {
@@ -37,52 +40,99 @@ export class AuthService {
     this.initSession();
   }
 
-  private async initSession() {
+  /**
+   * Initializes the authentication session by retrieving the current session from Supabase.
+   * If successful, sets up an event listener for changes in the authentication state.
+   *
+   * @returns A Promise that resolves when the session is initialized.
+   */
+  private async initSession(): Promise<void> {
     let initialSession = null;
     try {
       const {
-        data: { session },
-      } = await this._supabase.auth.getSession();
+        data: {session},
+      } = await this.supabase.auth.getSession();
       initialSession = session;
 
-      this._supabase.auth.onAuthStateChange((event, session) => {
-        this._session.next(session);
+      this.supabase.auth.onAuthStateChange((event, session) => {
+        this.session.next(session);
       });
     } catch (error) {
       console.error("Error initializing session:", error);
-      this._session.next(null);
+      this.session.next(null);
     } finally {
-      this._session.next(initialSession);
+      this.session.next(initialSession);
     }
   }
 
-  get session$() {
-    return this._session.asObservable();
+  /**
+   * Returns an observable representing the current authentication session.
+   *
+   * @returns An Observable that emits the current AuthSession or null if no session is active.
+   */
+  get session$(): Observable<AuthSession | null> {
+    return this.session.asObservable();
+  }
+  
+  get userId$() {
+    return from(this.supabase.auth.getUser());
   }
 
+  get client(): SupabaseClient {
+    return this.supabase
+  }
+
+  /**
+   * Listens for changes in the authentication state and calls the given callback function whenever the state changes.
+   *
+   * @param callback A function that will be called whenever the authentication state changes.
+   *                 The function takes two parameters: `event`, which is an `AuthChangeEvent` enum value
+   *                 indicating the type of event that occurred, and `session`, which is the current session
+   *                 or `null` if the user is not signed in.
+   *
+   * @returns The subscription for the given callback. You can use the `unsubscribe()` method of the subscription
+   *          to stop listening to authentication state changes.
+   */
   onAuthChange(
     callback: (event: AuthChangeEvent, session: Session | null) => void,
   ) {
-    return this._supabase.auth.onAuthStateChange(callback);
+    return this.supabase.auth.onAuthStateChange(callback);
   }
 
   public signup(email: string, password: string): Observable<AuthResponse> {
     return from(
-      this._supabase.auth.signUp({ email, password }),
+      this.supabase.auth.signUp({email, password}),
     ) as Observable<AuthResponse>;
   }
 
+  /**
+   * Signs in the user with the given email and password.
+   *
+   * @param email The email address of the user to sign in.
+   * @param password The password for the user to sign in.
+   *
+   * @returns An Observable that emits an object with a single property,
+   *          `access_token`, which is the access token for the signed in user.
+   */
   public login(
     email: string,
     password: string,
   ): Observable<AuthTokenResponsePassword> {
     return from(
-      this._supabase.auth.signInWithPassword({ email, password }),
+      this.supabase.auth.signInWithPassword({email, password}),
     ) as Observable<AuthTokenResponsePassword>;
   }
 
+  /**
+   * Signs out the current user.
+   *
+   * @returns An Observable that resolves when the sign out is complete. The
+   *          Observable emits an object with a single property, `error`, which
+   *          is `null` if the sign out was successful or an `AuthError` object
+   *          if the sign out failed.
+   */
   public logout(): Observable<{ error: AuthError | null }> {
-    return from(this._supabase.auth.signOut()) as Observable<{
+    return from(this.supabase.auth.signOut()) as Observable<{
       error: AuthError | null;
     }>;
   }

@@ -39,10 +39,10 @@ import {AuthService} from '../../services/auth/auth.service';
 export class LoginComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = new FormGroup({});
 
-  private _router: Router = inject(Router);
-  private _toastService: ToastService = inject(ToastService);
-  private _subscriptionManager: Subscription = new Subscription();
-  private _auth: AuthService = inject(AuthService);
+  private router: Router = inject(Router);
+  private toastService: ToastService = inject(ToastService);
+  private subscriptionManager: Subscription = new Subscription();
+  private auth: AuthService = inject(AuthService);
   ngOnInit(): void {
     this.formGroup = new FormGroup({
       email: new FormControl<string | null>(null, [
@@ -60,11 +60,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.formGroup.valid) {
       const email = this.formGroup.get('email')?.value;
       const password = this.formGroup.get('password')?.value;
-      this._subscriptionManager.add(
-        this._auth.login(email, password).subscribe((response: AuthTokenResponsePassword) => {
+      this.subscriptionManager.add(
+        this.auth.login(email, password).subscribe((response: AuthTokenResponsePassword) => {
           const { data, error } = response;
           if (isAuthApiError(error)) {
-            this._toastService.addToast(
+            this.toastService.addToast(
               ToastSeverity.ERROR,
               error.name,
               error.message,
@@ -72,13 +72,13 @@ export class LoginComponent implements OnInit, OnDestroy {
             );
           }
           if (data !== null && data.user !== null) {
-            this._toastService.addToast(
+            this.toastService.addToast(
               ToastSeverity.SUCCESS,
               'Success',
               'User logged in successfully'
             );
             this.formGroup.reset();
-            this._router.navigate(['/']);
+            this.router.navigate(['/']);
           }
         })
       )
@@ -88,6 +88,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptionManager.unsubscribe();
+    this.subscriptionManager.unsubscribe();
   }
 }

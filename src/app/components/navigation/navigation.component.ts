@@ -15,24 +15,24 @@ import {AuthService} from '../../services/auth/auth.service';
 export class NavigationComponent implements OnInit, OnDestroy {
   public session = signal<AuthSession | null>(null);
 
-  private _router: Router = inject(Router);
-  private _auth: AuthService = inject(AuthService);
-  private _subscriptionManager: Subscription = new Subscription();
+  private router: Router = inject(Router);
+  private auth: AuthService = inject(AuthService);
+  private subscriptionManager: Subscription = new Subscription();
   ngOnInit(): void {
-    this._auth.session$.subscribe((session) => {
+    this.auth.session$.subscribe((session) => {
       this.session.set(session);
     });
   }
 
   public logout(): void {
-    this._subscriptionManager.add(
-      this._auth.logout().subscribe((response) => {
-        this._router.navigate(["/login"]);
+    this.subscriptionManager.add(
+      this.auth.logout().subscribe((response) => {
+        this.router.navigate(["/login"]);
       }),
     );
   }
 
   ngOnDestroy(): void {
-    this._subscriptionManager.unsubscribe();
+    this.subscriptionManager.unsubscribe();
   }
 }
