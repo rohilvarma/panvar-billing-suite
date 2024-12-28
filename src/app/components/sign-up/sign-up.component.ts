@@ -67,7 +67,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
                 ToastSeverity.ERROR,
                 error.name,
                 error.message,
-                error.status.toString(),
+                error.status.toString()
               );
             }
 

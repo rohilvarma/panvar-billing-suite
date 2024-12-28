@@ -7,17 +7,17 @@ import {
   AuthTokenResponsePassword,
   createClient,
   Session,
-  SupabaseClient
+  SupabaseClient,
 } from '@supabase/supabase-js';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { environments } from '../../../environments/environments';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private session = new BehaviorSubject<AuthSession | null>(
-    JSON.parse(localStorage.getItem("supabase.auth.token") || "null"),
+    JSON.parse(localStorage.getItem('supabase.auth.token') || 'null')
   );
   private userId = new BehaviorSubject<string | null>(null);
   private supabase: SupabaseClient;
@@ -30,10 +30,10 @@ export class AuthService {
         auth: {
           persistSession: true, // Ensures session is saved across browser reloads
           autoRefreshToken: true, // Automatically refreshes session tokens
-          storageKey: "supabase.auth.token",
+          storageKey: 'supabase.auth.token',
           storage: window.localStorage,
         },
-      },
+      }
     );
 
     this.initSession();
@@ -49,7 +49,7 @@ export class AuthService {
     let initialSession = null;
     try {
       const {
-        data: {session},
+        data: { session },
       } = await this.supabase.auth.getSession();
       initialSession = session;
 
@@ -59,7 +59,7 @@ export class AuthService {
         this.session.next(session);
       });
     } catch (error) {
-      console.error("Error initializing session:", error);
+      console.error('Error initializing session:', error);
       this.session.next(null);
     } finally {
       this.session.next(initialSession);
@@ -74,13 +74,13 @@ export class AuthService {
   get session$(): Observable<AuthSession | null> {
     return this.session.asObservable();
   }
-  
+
   get userId$(): Observable<string | null> {
     return this.userId.asObservable();
   }
 
   get client(): SupabaseClient {
-    return this.supabase
+    return this.supabase;
   }
 
   /**
@@ -95,14 +95,14 @@ export class AuthService {
    *          to stop listening to authentication state changes.
    */
   onAuthChange(
-    callback: (event: AuthChangeEvent, session: Session | null) => void,
+    callback: (event: AuthChangeEvent, session: Session | null) => void
   ) {
     return this.supabase.auth.onAuthStateChange(callback);
   }
 
   public signup(email: string, password: string): Observable<AuthResponse> {
     return from(
-      this.supabase.auth.signUp({email, password}),
+      this.supabase.auth.signUp({ email, password })
     ) as Observable<AuthResponse>;
   }
 
@@ -117,10 +117,10 @@ export class AuthService {
    */
   public login(
     email: string,
-    password: string,
+    password: string
   ): Observable<AuthTokenResponsePassword> {
     return from(
-      this.supabase.auth.signInWithPassword({email, password}),
+      this.supabase.auth.signInWithPassword({ email, password })
     ) as Observable<AuthTokenResponsePassword>;
   }
 

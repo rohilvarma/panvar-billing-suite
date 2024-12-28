@@ -1,11 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  PostgrestError,
   PostgrestSingleResponse,
-  SupabaseClient,
-  UserResponse,
+  SupabaseClient
 } from '@supabase/supabase-js';
-import { from, Observable, of, switchMap } from 'rxjs';
+import { from, Observable, of, switchMap, take } from 'rxjs';
 import { Vendor } from '../../interfaces/vendors';
 import { AuthService } from '../auth/auth.service';
 
@@ -28,6 +26,7 @@ export class VendorManagementService {
    */
   public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
+      take(1),
       switchMap((userId: string | null) => {
         if (userId) {
           return from(
@@ -47,6 +46,7 @@ export class VendorManagementService {
     user_id?: string;
   }): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
+      take(1),
       switchMap((userId: string | null) => {
         if (userId) {
           requestPayload['user_id'] = userId;
@@ -62,6 +62,7 @@ export class VendorManagementService {
     id: number
   ): Observable<PostgrestSingleResponse<Vendor>> {
     return this.auth.userId$.pipe(
+      take(1),
       switchMap((userId: string | null) => {
         if (userId) {
           return from(
@@ -71,6 +72,25 @@ export class VendorManagementService {
               .eq('id', id)
               .eq('user_id', userId)
               .single()
+          );
+        } else {
+          return of({} as PostgrestSingleResponse<Vendor>);
+        }
+      })
+    );
+  }
+
+  public getVendorDetailsById(id: number) {
+    return this.auth.userId$.pipe(
+      take(1),
+      switchMap((userId: string | null) => {
+        if (userId) {
+          return from(
+            this.client
+              .from('vendors_details')
+              .select('*')
+              .eq('vendor_id', id)
+              .eq('user_id', userId)
           );
         } else {
           return of({} as PostgrestSingleResponse<Vendor>);

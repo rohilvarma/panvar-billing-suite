@@ -36,7 +36,6 @@ import { toastMessages, ToastSeverity } from '../../utils/constants';
   styleUrl: './login.component.css',
   providers: [ToastService],
 })
-
 export class LoginComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = new FormGroup({});
 

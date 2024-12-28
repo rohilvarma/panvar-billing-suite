@@ -17,11 +17,15 @@ export interface VendorResponse {
   statusText: string;
 }
 
-export interface IVendorDetails {
-  invoiceNo: string;
-  date: Date;
-  RONumber: string;
-  RODate: Date;
+export interface VendorDetails {
+  id: number;
+  created_at: Date;
+  edited_at: Date;
+  user_id: string;
+  invoice_no: string;
+  ro_no: string;
+  ro_date: Date;
   amount: number;
   description: string;
+  vendor_id: number;
 }

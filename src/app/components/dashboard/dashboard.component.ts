@@ -13,19 +13,17 @@ import {
   Validators,
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { ButtonModule } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
 import { Subscription } from 'rxjs';
-import { Toast } from 'primeng/toast';
-import { Vendor, VendorResponse } from '../../interfaces/vendors';
+import { Vendor } from '../../interfaces/vendors';
+import { ToastService } from '../../services/toast/toast.service';
 import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
 import { toastMessages, ToastSeverity } from '../../utils/constants';
 import { counterArray } from '../../utils/helper';
-import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { MessageService } from 'primeng/api';
-import { ToastService } from '../../services/toast/toast.service';
 
 type NewVendor = {
   name: string;
@@ -94,18 +92,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
             );
           }
         },
-        error: (error: PostgrestError) => {
+        error: (error) => {
           this.toastService.addToast(
             ToastSeverity.ERROR,
-            error.name,
-            error.message,
-            error.code
+            toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+            toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
           );
           this.vendorDetails.set([]);
         },
+        complete: () => {
+          this.toggleIsLoadingVendors();
+        },
       })
     );
-    this.toggleIsLoadingVendors();
   }
 
   /**
@@ -135,8 +134,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.subscriptionManager.add(
         this.vendorManagementService.addVendor(newVendor).subscribe({
           next: (response: PostgrestSingleResponse<Vendor[]>) => {
-            const { error} = response;
-            if(error) {
+            const { error } = response;
+            if (error) {
               this.toastService.addToast(
                 ToastSeverity.ERROR,
                 error.name,
@@ -144,24 +143,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 error.code
               );
             }
+          },
+          error: (error) => {
+            this.toastService.addToast(
+              ToastSeverity.ERROR,
+              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
+            );
+          },
+          complete: () => {
             this.isAddVendorDialogVisible = false;
             this.fetchAllVendors();
             this.toastService.addToast(
               ToastSeverity.SUCCESS,
               toastMessages.SUCCESS.TITLE.NEW_VENDOR,
-              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR,
-            )
-          },
-          error: (error: PostgrestError) => {
-            this.toastService.addToast(
-              ToastSeverity.ERROR,
-              error.name,
-              error.message,
-              error.code
+              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR
             );
           },
         })
-      )
+      );
     } else {
       this.newVendorForm.markAllAsTouched();
     }
