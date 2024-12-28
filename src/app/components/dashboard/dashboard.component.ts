@@ -103,13 +103,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
             error.code
           );
           this.vendorDetails.set([]);
-          this.toggleIsLoadingVendors();
-        },
-        complete: () => {
-          this.toggleIsLoadingVendors();
         },
       })
     );
+    this.toggleIsLoadingVendors();
   }
 
   /**
@@ -141,7 +138,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           next: (response: PostgrestSingleResponse<Vendor[]>) => {
             const { error} = response;
             if(error) {
-
               this.toastService.addToast(
                 ToastSeverity.ERROR,
                 error.name,
@@ -149,6 +145,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 error.code
               );
             }
+            this.isAddVendorDialogVisible = false;
+            this.fetchAllVendors();
+            this.toastService.addToast(
+              ToastSeverity.SUCCESS,
+              toastMessages.SUCCESS.TITLE.NEW_VENDOR,
+              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR,
+            )
           },
           error: (error: PostgrestError) => {
             this.toastService.addToast(
@@ -158,15 +161,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
               error.code
             );
           },
-          complete: () => {
-            this.isAddVendorDialogVisible = false;
-            this.fetchAllVendors();
-            this.toastService.addToast(
-              ToastSeverity.SUCCESS,
-              toastMessages.SUCCESS.TITLE.NEW_VENDOR,
-              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR,
-            )
-          }
         })
       )
     } else {

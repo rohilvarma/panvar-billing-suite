@@ -28,9 +28,9 @@ export class VendorManagementService {
    */
   public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
-      switchMap(({ data: { user } }: UserResponse) => {
-        if (user?.id) {
-          return from(this.client.from('vendors').select('*').eq('user_id', user.id).throwOnError());
+      switchMap((userId: string | null) => {
+        if (userId) {          
+          return from(this.client.from('vendors').select('*').eq('user_id', userId));
         } else {
           return of({} as PostgrestSingleResponse<Vendor[]>);
         }
@@ -45,9 +45,9 @@ export class VendorManagementService {
     user_id?: string;
   }): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
-      switchMap(({ data: { user } }: UserResponse) => {
-        if (user?.id) {
-          requestPayload['user_id'] = user.id;
+      switchMap((userId: string | null) => {
+        if (userId) {
+          requestPayload['user_id'] = userId;
           return this.client.from('vendors').insert([requestPayload]).select().throwOnError();
         } else {
           return of({} as PostgrestSingleResponse<Vendor[]>);

@@ -1,5 +1,4 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, from, Observable} from 'rxjs';
+import { Injectable } from '@angular/core';
 import {
   AuthChangeEvent,
   AuthError,
@@ -8,10 +7,10 @@ import {
   AuthTokenResponsePassword,
   createClient,
   Session,
-  SupabaseClient,
-  UserResponse
+  SupabaseClient
 } from '@supabase/supabase-js';
-import {environments} from '../../../environments/environments';
+import { BehaviorSubject, from, Observable } from 'rxjs';
+import { environments } from '../../../environments/environments';
 
 @Injectable({
   providedIn: 'root'
@@ -54,6 +53,8 @@ export class AuthService {
       } = await this.supabase.auth.getSession();
       initialSession = session;
 
+      this.userId.next(session?.user?.id ?? null);
+
       this.supabase.auth.onAuthStateChange((event, session) => {
         this.session.next(session);
       });
@@ -74,8 +75,8 @@ export class AuthService {
     return this.session.asObservable();
   }
   
-  get userId$() {
-    return from(this.supabase.auth.getUser());
+  get userId$(): Observable<string | null> {
+    return this.userId.asObservable();
   }
 
   get client(): SupabaseClient {
