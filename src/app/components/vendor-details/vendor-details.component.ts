@@ -1,5 +1,5 @@
 import {Component, inject, OnDestroy, OnInit, signal, WritableSignal} from "@angular/core";
-import { IVendor, IVendorDetails } from "../../interfaces/vendor-detail.interface";
+import { Vendor, IVendorDetails } from "../../interfaces/vendors";
 import { paginationOptions, sampleVendorDetails } from "../../utils/constants";
 import { ButtonModule } from "primeng/button";
 import { RippleModule } from "primeng/ripple";
@@ -22,7 +22,7 @@ interface Column {
   styleUrl: "./vendor-details.component.css",
 })
 export class VendorDetailsComponent implements OnInit, OnDestroy {
-  public vendor: WritableSignal<IVendor> = signal<IVendor>({} as IVendor);
+  public vendor: WritableSignal<Vendor> = signal<Vendor>({} as Vendor);
   public vendorDetails: WritableSignal<IVendorDetails[]> = signal<IVendorDetails[]>([]);
 
   public isAddInvoiceDialogOpen: boolean = false;

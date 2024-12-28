@@ -4,13 +4,14 @@
     <p-button
       label="Add Vendor"
       icon="pi pi-plus"
+      [disabled]="this.isLoadingVendors"
       size="small"
       iconPos="right"
       (click)="this.showAddVendorDialog()"
     />
   </div>
   <div class="grid grid-cols-4 gap-2">
-    @if (this.vendorDetails().length === 0) {
+    @if (this.isLoadingVendors) {
       @for (_ of this.counterArray(3); track $index) {
         <div class="bg-white rounded-lg p-4">
           <p-skeleton styleClass="mb-2" />
@@ -61,7 +62,9 @@
     <div class="mb-6">
       <label for="email" class="font-bold">Email:</label>
       <input pInputText formControlName="email" id="email" type="email" class="w-full">
-      @if (this.newVendorForm.get('email')?.invalid && this.newVendorForm.get('email')?.touched) {
+      @if (this.newVendorForm.get('email')?.hasError('required') && this.newVendorForm.get('email')?.touched) {
+        <small class="text-red-500">Please enter your email.</small>
+      } @else if (this.newVendorForm.get('email')?.hasError('email') && this.newVendorForm.get('email')?.touched) {
         <small class="text-red-500">Please enter a valid email address.</small>
       }
     </div>
@@ -70,3 +73,5 @@
     </div>
   </form>
 </p-dialog>
+
+<p-toast></p-toast>

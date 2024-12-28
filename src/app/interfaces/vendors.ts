@@ -1,4 +1,6 @@
-export interface IVendor {
+import {PostgrestError} from '@supabase/supabase-js';
+
+export interface Vendor {
   id: number;
   created_at: Date;
   user_id: string;
@@ -7,12 +9,9 @@ export interface IVendor {
   publication_name: string;
 }
 
-export interface IVendorResponse {
-  error: {
-    code: string;
-    message: string;
-  };
-  data: IVendor[];
+export interface VendorResponse {
+  error: PostgrestError
+  data: Vendor[];
   count: any;
   status: number;
   statusText: string;
@@ -25,11 +24,4 @@ export interface IVendorDetails {
   RODate: Date;
   amount: number;
   description: string;
-}
-
-export interface NewVendor {
-  name: string;
-  publication_name: string;
-  email: string;
-  user_id?: string;
 }

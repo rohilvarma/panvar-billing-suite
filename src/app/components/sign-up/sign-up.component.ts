@@ -18,6 +18,7 @@ import { Subscription } from 'rxjs';
 import { ToastService } from '../../services/toast/toast.service';
 import { ToastSeverity } from '../../utils/constants';
 import {AuthService} from '../../services/auth/auth.service';
+import { toastMessages } from '../../utils/constants';
 
 @Component({
   selector: 'app-sign-up',
@@ -70,15 +71,15 @@ export class SignUpComponent implements OnInit, OnDestroy {
                 ToastSeverity.ERROR,
                 error.name,
                 error.message,
-                error.status,
+                error.status.toString(),
               );
             }
 
             if (data !== null && data.user !== null) {
               this.toastService.addToast(
                 ToastSeverity.SUCCESS,
-                'Success',
-                'Please go to the email to verify your account.'
+                toastMessages.SUCCESS.TITLE.SIGN_UP,
+                toastMessages.SUCCESS.MESSAGE.VERIFY_EMAIL
               );
               this.formGroup.reset();
               this.router.navigate(['/']);

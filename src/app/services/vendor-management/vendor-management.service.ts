@@ -1,10 +1,16 @@
-import {inject, Injectable} from "@angular/core";
-import {AuthService} from "../auth/auth.service";
-import {from, Observable, of, switchMap,} from "rxjs";
-import {SupabaseClient} from "@supabase/supabase-js";
+import { inject, Injectable } from '@angular/core';
+import {
+  PostgrestError,
+  PostgrestSingleResponse,
+  SupabaseClient,
+  UserResponse,
+} from '@supabase/supabase-js';
+import { from, Observable, of, switchMap } from 'rxjs';
+import { Vendor } from '../../interfaces/vendors';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class VendorManagementService {
   private client: SupabaseClient;
@@ -14,17 +20,21 @@ export class VendorManagementService {
     this.client = this.auth.client;
   }
 
-  public getAllVendors(): Observable<any> {
+  /**
+   * Returns an observable that emits a list of vendors associated with the current user.
+   * 
+   * @returns An observable that emits a PostgrestSingleResponse containing an array of Vendor objects.
+   *          If the user is not signed in, an empty response is returned.
+   */
+  public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
-      switchMap(({ data: { user } }) => {
+      switchMap(({ data: { user } }: UserResponse) => {
         if (user?.id) {
-          return from(
-            this.client.from("vendors").select("*")
-          )
+          return from(this.client.from('vendors').select('*').eq('user_id', user.id).throwOnError());
         } else {
-          return of([]);
+          return of({} as PostgrestSingleResponse<Vendor[]>);
         }
-      }),
+      })
     );
   }
 
@@ -33,17 +43,16 @@ export class VendorManagementService {
     publication_name: string;
     email: string;
     user_id?: string;
-  }): Observable<any> {
+  }): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
-      switchMap(({data: {user}}) => {
-        if(user?.id) {
-          requestPayload['user_id'] = user?.id
-          return from(this.client.from('vendors').insert([requestPayload]));
-        }
-        else {
-          return of(null);
+      switchMap(({ data: { user } }: UserResponse) => {
+        if (user?.id) {
+          requestPayload['user_id'] = user.id;
+          return this.client.from('vendors').insert([requestPayload]).select().throwOnError();
+        } else {
+          return of({} as PostgrestSingleResponse<Vendor[]>);
         }
       })
-    )
+    );
   }
 }

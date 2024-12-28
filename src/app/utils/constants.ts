@@ -1,4 +1,4 @@
-import { IVendorDetails } from "../interfaces/vendor-detail.interface";
+import { IVendorDetails } from "../interfaces/vendors";
 
 export const paginationOptions = {
   rows: 10,
@@ -13,6 +13,40 @@ export enum ToastSeverity {
   SECONDARY = 'secondary',
   CONTRAST = 'contrast'
 }
+
+ export const toastMessages = {
+    SUCCESS: {
+      TITLE: {
+        'SUCCESS': 'Success',
+        'SIGN_UP': 'Sign Up',
+        'LOGOUT': 'Logout Successful',
+        'LOGIN': 'Login Successful',
+        'NEW_VENDOR': 'New Vendor Added',
+      },
+      MESSAGE: {
+        'LOGOUT': 'You have successfully logged out.',
+        'LOGIN': 'You have successfully logged in.',
+        'VERIFY_EMAIL': 'Please go to the email to verify your account.',
+        'NEW_VENDOR': 'Vendor added successfully.',
+      }
+    },
+    ERROR: {
+      TITLE: {
+        'CONTACT_ADMIN': 'Please Contact Admin',
+      },
+      MESSAGE: {
+        'CONTACT_ADMIN': 'Something went wrong. Please contact admin.',
+      }
+    },
+    WARN: {
+      TITLE: {
+        
+      },
+      MESSAGE: {
+        
+      }
+    }
+  }
 
 export const sampleVendorDetails: IVendorDetails[] = [
   {

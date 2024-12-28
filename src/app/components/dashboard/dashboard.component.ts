@@ -1,42 +1,60 @@
 import {
   Component,
-  signal,
-  OnInit,
   inject,
   OnDestroy,
+  OnInit,
+  signal,
   WritableSignal,
 } from '@angular/core';
-import {RouterLink} from '@angular/router';
-import {VendorManagementService} from '../../services/vendor-management/vendor-management.service';
-import {Subscription} from 'rxjs';
-import {
-  IVendor,
-  IVendorResponse, NewVendor,
-} from '../../interfaces/vendor-detail.interface';
-import {ToastService} from '../../services/toast/toast.service';
-import {Skeleton} from 'primeng/skeleton';
-import {counterArray} from '../../utils/helper';
-import {ButtonModule} from 'primeng/button';
-import {ToastSeverity} from '../../utils/constants';
-import {Dialog} from 'primeng/dialog';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {InputTextModule} from 'primeng/inputtext';
+import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { Skeleton } from 'primeng/skeleton';
+import { Subscription } from 'rxjs';
+import { Toast } from 'primeng/toast';
+import { Vendor, VendorResponse } from '../../interfaces/vendors';
+import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
+import { toastMessages, ToastSeverity } from '../../utils/constants';
+import { counterArray } from '../../utils/helper';
+import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { MessageService } from 'primeng/api';
+import { ToastService } from '../../services/toast/toast.service';
+
+type NewVendor = {
+  name: string;
+  publication_name: string;
+  email: string;
+  user_id?: string;
+};
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, Skeleton, ButtonModule, Dialog, ReactiveFormsModule, InputTextModule],
+  imports: [
+    RouterLink,
+    Skeleton,
+    Toast,
+    ButtonModule,
+    Dialog,
+    ReactiveFormsModule,
+    InputTextModule,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
+  providers: [ToastService, MessageService],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  public vendorDetails: WritableSignal<IVendor[]> = signal<IVendor[]>([]);
+  public vendorDetails: WritableSignal<Vendor[]> = signal<Vendor[]>([]);
   public counterArray = counterArray;
+  public isLoadingVendors: boolean = false;
+
   private vendorManagementService: VendorManagementService = inject(
     VendorManagementService
   );
@@ -44,15 +62,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public isAddVendorDialogVisible: boolean = false;
   public newVendorForm: FormGroup = new FormGroup({
     name: new FormControl(null, [Validators.required]),
-    email: new FormControl(null, [Validators.required]),
+    email: new FormControl(null, [Validators.required, Validators.email]),
     publication_name: new FormControl(null, [Validators.required]),
   });
 
-  private subscriptionManager = new Subscription();
+  private subscriptionManager: Subscription = new Subscription();
   private toastService: ToastService = inject(ToastService);
 
   ngOnInit(): void {
-    this.fetchVendors();
+    this.fetchAllVendors();
   }
 
   /**
@@ -60,22 +78,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * `vendorDetails` signal with the response. If the response contains an
    * error, it is displayed as a toast notification.
    */
-  private fetchVendors(): void {
+  private fetchAllVendors(): void {
+    this.toggleIsLoadingVendors();
     this.subscriptionManager.add(
-      this.vendorManagementService
-        .getAllVendors()
-        .subscribe((response: IVendorResponse) => {
-          if (response.error) {
+      this.vendorManagementService.getAllVendors().subscribe({
+        next: (response: PostgrestSingleResponse<Vendor[]>) => {
+          const { data, error } = response;
+          if (data) {
+            this.vendorDetails.set(data);
+          } else {
             this.toastService.addToast(
               ToastSeverity.ERROR,
-              response.error.code,
-              response.error.message
+              error.name,
+              error.message,
+              error.code
             );
-          } else {
-            this.vendorDetails.set(response.data);
           }
-        })
+        },
+        error: (error: PostgrestError) => {
+          this.toastService.addToast(
+            ToastSeverity.ERROR,
+            error.name,
+            error.message,
+            error.code
+          );
+          this.vendorDetails.set([]);
+          this.toggleIsLoadingVendors();
+        },
+        complete: () => {
+          this.toggleIsLoadingVendors();
+        },
+      })
     );
+  }
+
+  /**
+   * Toggles the `isLoadingVendors` flag. This flag is used to conditionally
+   * render the vendor list or a loading indicator.
+   */
+  private toggleIsLoadingVendors(): void {
+    this.isLoadingVendors = !this.isLoadingVendors;
   }
 
   /**
@@ -92,24 +134,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const newVendor: NewVendor = {
         name: this.newVendorForm.get('name')?.value!,
         publication_name: this.newVendorForm.get('publication_name')?.value!,
-        email: this.newVendorForm.get('email')?.value!
-      }
+        email: this.newVendorForm.get('email')?.value!,
+      };
       this.subscriptionManager.add(
-        this.vendorManagementService.addVendor(newVendor).subscribe((response: IVendorResponse) => {
-          if (response.error) {
+        this.vendorManagementService.addVendor(newVendor).subscribe({
+          next: (response: PostgrestSingleResponse<Vendor[]>) => {
+            const { error} = response;
+            if(error) {
+
+              this.toastService.addToast(
+                ToastSeverity.ERROR,
+                error.name,
+                error.message,
+                error.code
+              );
+            }
+          },
+          error: (error: PostgrestError) => {
             this.toastService.addToast(
               ToastSeverity.ERROR,
-              response.error.code,
-              response.error.message
-            )
-          }
-          else {
+              error.name,
+              error.message,
+              error.code
+            );
+          },
+          complete: () => {
+            this.isAddVendorDialogVisible = false;
+            this.fetchAllVendors();
             this.toastService.addToast(
               ToastSeverity.SUCCESS,
-              'Success',
-              'Vendor added successfully'
+              toastMessages.SUCCESS.TITLE.NEW_VENDOR,
+              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR,
             )
-            this.isAddVendorDialogVisible = false;
           }
         })
       )
