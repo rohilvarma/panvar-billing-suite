@@ -22,15 +22,17 @@ export class VendorManagementService {
 
   /**
    * Returns an observable that emits a list of vendors associated with the current user.
-   * 
+   *
    * @returns An observable that emits a PostgrestSingleResponse containing an array of Vendor objects.
    *          If the user is not signed in, an empty response is returned.
    */
   public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
     return this.auth.userId$.pipe(
       switchMap((userId: string | null) => {
-        if (userId) {          
-          return from(this.client.from('vendors').select('*').eq('user_id', userId));
+        if (userId) {
+          return from(
+            this.client.from('vendors').select('*').eq('user_id', userId)
+          );
         } else {
           return of({} as PostgrestSingleResponse<Vendor[]>);
         }
@@ -48,9 +50,30 @@ export class VendorManagementService {
       switchMap((userId: string | null) => {
         if (userId) {
           requestPayload['user_id'] = userId;
-          return this.client.from('vendors').insert([requestPayload]).select().throwOnError();
+          return this.client.from('vendors').insert([requestPayload]).select();
         } else {
           return of({} as PostgrestSingleResponse<Vendor[]>);
+        }
+      })
+    );
+  }
+
+  public getVendorById(
+    id: number
+  ): Observable<PostgrestSingleResponse<Vendor>> {
+    return this.auth.userId$.pipe(
+      switchMap((userId: string | null) => {
+        if (userId) {
+          return from(
+            this.client
+              .from('vendors')
+              .select('*')
+              .eq('id', id)
+              .eq('user_id', userId)
+              .single()
+          );
+        } else {
+          return of({} as PostgrestSingleResponse<Vendor>);
         }
       })
     );

@@ -8,17 +8,14 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthResponse, isAuthApiError } from '@supabase/supabase-js';
-import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabel } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { Toast } from 'primeng/toast';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
-import { ToastSeverity } from '../../utils/constants';
-import {AuthService} from '../../services/auth/auth.service';
-import { toastMessages } from '../../utils/constants';
+import { toastMessages, ToastSeverity } from '../../utils/constants';
 
 @Component({
   selector: 'app-sign-up',
@@ -30,12 +27,11 @@ import { toastMessages } from '../../utils/constants';
     FloatLabel,
     ReactiveFormsModule,
     PasswordModule,
-    Toast,
     RouterLink,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css',
-  providers: [ToastService, MessageService],
+  providers: [ToastService],
 })
 export class SignUpComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = new FormGroup({});

@@ -40,7 +40,6 @@ type NewVendor = {
   imports: [
     RouterLink,
     Skeleton,
-    Toast,
     ButtonModule,
     Dialog,
     ReactiveFormsModule,
@@ -48,7 +47,7 @@ type NewVendor = {
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
-  providers: [ToastService, MessageService],
+  providers: [ToastService],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   public vendorDetails: WritableSignal<Vendor[]> = signal<Vendor[]>([]);

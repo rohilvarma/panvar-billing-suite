@@ -1,13 +1,17 @@
-import {Component, inject, OnDestroy, OnInit, signal, WritableSignal} from "@angular/core";
-import { Vendor, IVendorDetails } from "../../interfaces/vendors";
-import { paginationOptions, sampleVendorDetails } from "../../utils/constants";
-import { ButtonModule } from "primeng/button";
-import { RippleModule } from "primeng/ripple";
-import { ActivatedRoute } from "@angular/router";
+import { formatCurrency } from "@angular/common";
+import { Component, inject, OnDestroy, OnInit, signal, WritableSignal } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { AgGridAngular } from "ag-grid-angular";
 import { GridApi, GridOptions, GridReadyEvent } from "ag-grid-community";
+import { ButtonModule } from "primeng/button";
+import { RippleModule } from "primeng/ripple";
+import { Subscription } from "rxjs";
+import { IVendorDetails, Vendor } from "../../interfaces/vendors";
+import { ToastService } from "../../services/toast/toast.service";
+import { VendorManagementService } from "../../services/vendor-management/vendor-management.service";
+import { paginationOptions, ToastSeverity } from "../../utils/constants";
 import { formatDate } from "../../utils/helper";
-import { formatCurrency } from "@angular/common";
 
 interface Column {
   field: string;
@@ -20,6 +24,7 @@ interface Column {
   imports: [ButtonModule, RippleModule, AgGridAngular],
   templateUrl: "./vendor-details.component.html",
   styleUrl: "./vendor-details.component.css",
+  providers: [ToastService]
 })
 export class VendorDetailsComponent implements OnInit, OnDestroy {
   public vendor: WritableSignal<Vendor> = signal<Vendor>({} as Vendor);
@@ -28,14 +33,19 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   public isAddInvoiceDialogOpen: boolean = false;
 
   public gridOptions!: GridOptions;
+  
+  private vendorId: WritableSignal<number> = signal<number>(-1);
+  private subscriptionManager: Subscription = new Subscription();
+  private vendorManagementService: VendorManagementService = inject(
+    VendorManagementService
+  );
   private gridApi: GridApi = {} as GridApi;
   private route: ActivatedRoute = inject(ActivatedRoute);
+  private router: Router = inject(Router);
+  private toastService: ToastService = inject(ToastService);
 
   ngOnInit(): void {
-    const vendorId = this.route.snapshot.params["id"];
-
-    // this.vendor.set(sampleVendors.find((v: IVendor) => v.id === vendorId)!);
-
+    this.vendorId.set(this.route.snapshot.params["id"]);
     this.initialiseGridOptions();
     this.fetchVendorDetails();
   }
@@ -97,12 +107,25 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   }
 
   private fetchVendorDetails(): void {
-    // this.vendorDetails.set(sampleVendorDetails);
-    // const columns: Column[] = Object.keys(this.vendorDetails()[0]).map(
-    //   (key) => ({ field: key, header: key })
-    // );
-    // this.gridOptions.rowData = this.vendorDetails();
+    this.subscriptionManager.add(
+      this.vendorManagementService.getVendorById(this.vendorId()).subscribe((response: PostgrestSingleResponse<Vendor>) => {
+        const { data, error } = response;
+        if (data) {          
+          this.vendor.set(data);
+        } else {
+          this.router.navigate(["/"]);
+          this.toastService.addToast(
+            ToastSeverity.ERROR,
+            error.name,
+            error.message,
+            error.code
+          );
+        }
+      })
+    )
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptionManager.unsubscribe();
+  }
 }

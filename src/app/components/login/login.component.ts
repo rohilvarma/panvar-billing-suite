@@ -11,12 +11,10 @@ import {
   AuthTokenResponsePassword,
   isAuthApiError,
 } from '@supabase/supabase-js';
-import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabel } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { Toast } from 'primeng/toast';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
 import { ToastService } from '../../services/toast/toast.service';
@@ -26,7 +24,6 @@ import { toastMessages, ToastSeverity } from '../../utils/constants';
   selector: 'app-login',
   standalone: true,
   imports: [
-    Toast,
     ButtonModule,
     InputTextModule,
     FormsModule,
@@ -37,7 +34,7 @@ import { toastMessages, ToastSeverity } from '../../utils/constants';
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  providers: [ToastService, MessageService],
+  providers: [ToastService],
 })
 
 export class LoginComponent implements OnInit, OnDestroy {
