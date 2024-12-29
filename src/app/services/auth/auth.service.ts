@@ -10,7 +10,8 @@ import {
   SupabaseClient,
 } from '@supabase/supabase-js';
 import { BehaviorSubject, from, Observable } from 'rxjs';
-import { environments } from '../../../environments/environments';
+import { environment } from '../../../environments/environment';
+
 
 @Injectable({
   providedIn: 'root',
@@ -24,8 +25,8 @@ export class AuthService {
 
   constructor() {
     this.supabase = createClient(
-      environments.supabaseUrl,
-      environments.supabaseKey,
+      environment.supabaseUrl,
+      environment.supabaseKey,
       {
         auth: {
           persistSession: true, // Ensures session is saved across browser reloads
