@@ -18,10 +18,10 @@ export interface VendorResponse {
 }
 
 export interface VendorDetails {
-  id: number;
+  id?: number;
   created_at: Date;
-  edited_at: Date;
-  user_id: string;
+  edited_at?: Date;
+  user_id?: string;
   invoice_no: string;
   ro_no: string;
   ro_date: Date;

@@ -1,17 +1,20 @@
 <section id="header">
   <div class="flex items-center justify-between">
-    <div class="text-xl font-bold">
-      {{ this.vendor().publication_name }}
+    <div class="text-xl">
+      <span class="font-bold"> Publication Name: </span>
+      <span class="font-medium">
+        {{ this.vendor().publication_name }}
+      </span>
     </div>
     <div class="">
-<!--      <p-button-->
-<!--        pRipple-->
-<!--        label="New Invoice"-->
-<!--        icon="pi pi-plus"-->
-<!--        iconPos="right"-->
-<!--        size="small"-->
-<!--        (click)="this.showAddInvoiceDialog()"-->
-<!--      />-->
+      <p-button
+        pRipple
+        label="New Invoice"
+        icon="pi pi-plus"
+        iconPos="right"
+        size="small"
+        (click)="this.showAddInvoiceDialog()"
+      />
     </div>
   </div>
 </section>
@@ -23,3 +26,115 @@
     [gridOptions]="this.gridOptions"
   />
 </section>
+
+<p-dialog
+  header="Add New Invoice"
+  [modal]="true"
+  [(visible)]="isAddInvoiceDialogOpen"
+>
+  <form
+    [formGroup]="this.newInvoiceFormGroup"
+    (ngSubmit)="this.addNewInvoice()"
+  >
+    <div class="grid grid-cols-2 gap-4">
+      <div class="">
+        <label for="invoice_no">Invoice Number</label>
+        <input
+          type="text"
+          pInputText
+          class="w-full mt-2"
+          id="invoice_no"
+          formControlName="invoice_no"
+        />
+        @if (this.newInvoiceFormGroup.get('invoice_no')?.touched &&
+        this.newInvoiceFormGroup.get('invoice_no')?.invalid) {
+        <small class="text-red-500">Invoice Number is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="ro_no">RO Number</label>
+        <input
+          type="text"
+          pInputText
+          class="w-full mt-2"
+          id="ro_no"
+          formControlName="ro_no"
+        />
+        @if (this.newInvoiceFormGroup.get('ro_no')?.touched &&
+        this.newInvoiceFormGroup.get('ro_no')?.invalid) {
+        <small class="text-red-500">RO Number is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="created_at">Date</label>
+        <input
+          type="date"
+          pInputText
+          class="w-full mt-2"
+          id="created_at"
+          formControlName="created_at"
+        />
+        @if (this.newInvoiceFormGroup.get('created_at')?.touched &&
+        this.newInvoiceFormGroup.get('created_at')?.invalid) {
+        <small class="text-red-500">Date is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="ro_date">RO Date</label>
+        <input
+          type="date"
+          pInputText
+          class="w-full mt-2"
+          id="ro_date"
+          formControlName="ro_date"
+        />
+        @if (this.newInvoiceFormGroup.get('ro_date')?.touched &&
+        this.newInvoiceFormGroup.get('ro_date')?.invalid) {
+        <small class="text-red-500">RO Date is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="amount">Amount</label>
+        <input
+          type="number"
+          pInputText
+          class="w-full mt-2"
+          id="amount"
+          formControlName="amount"
+        />
+        @if (this.newInvoiceFormGroup.get('amount')?.touched &&
+        this.newInvoiceFormGroup.get('amount')?.invalid) {
+        <small class="text-red-500">Amount is required.</small>
+        }
+      </div>
+
+      <div class="col-span-2">
+        <label for="description">Description</label>
+        <textarea
+          rows="5"
+          pTextarea
+          formControlName="description"
+          class="mt-2 w-full block"
+        ></textarea>
+        @if (this.newInvoiceFormGroup.get('description')?.touched &&
+        this.newInvoiceFormGroup.get('description')?.invalid) {
+        <small class="text-red-500">Description is required.</small>
+        }
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-2">
+      <p-button
+        label="Add"
+        severity="contrast"
+        icon="pi pi-check"
+        iconPos="right"
+        type="submit"
+      />
+    </div>
+  </form>
+</p-dialog>

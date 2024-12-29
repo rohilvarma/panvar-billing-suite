@@ -7,12 +7,22 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { RippleModule } from 'primeng/ripple';
+import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
 import { Vendor, VendorDetails } from '../../interfaces/vendors';
 import { ToastService } from '../../services/toast/toast.service';
@@ -27,7 +37,16 @@ import { formatDate } from '../../utils/helper';
 @Component({
   selector: 'app-vendor-details',
   standalone: true,
-  imports: [ButtonModule, RippleModule, AgGridAngular],
+  imports: [
+    ButtonModule,
+    RippleModule,
+    Dialog,
+    InputTextModule,
+    TextareaModule,
+    AgGridAngular,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './vendor-details.component.html',
   styleUrl: './vendor-details.component.css',
   providers: [ToastService],
@@ -39,6 +58,14 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   >([]);
 
   public isAddInvoiceDialogOpen: boolean = false;
+  public newInvoiceFormGroup = new FormGroup({
+    invoice_no: new FormControl(null, [Validators.required]),
+    created_at: new FormControl(null, [Validators.required]),
+    ro_no: new FormControl(null, [Validators.required]),
+    ro_date: new FormControl(null, [Validators.required]),
+    amount: new FormControl(null, [Validators.required]),
+    description: new FormControl(null, [Validators.required]),
+  });
 
   public gridOptions!: GridOptions;
 
@@ -197,6 +224,57 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         },
       })
     );
+  }
+
+  public showAddInvoiceDialog(): void {
+    this.isAddInvoiceDialogOpen = true;
+  }
+
+  public addNewInvoice(): void {
+    const formValue = this.newInvoiceFormGroup.value;
+    const requestPayload: VendorDetails = {
+      invoice_no: formValue.invoice_no ?? '',
+      created_at: formValue.created_at ?? new Date(),
+      ro_no: formValue.ro_no ?? '',
+      ro_date: formValue.ro_date ?? new Date(),
+      amount: formValue.amount ?? 0,
+      description: formValue.description ?? '',
+      vendor_id: this.vendorId(),
+    };
+    this.subscriptionManager.add(
+      this.vendorManagementService.addNewVendorDetailById(requestPayload).subscribe({
+        next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
+          const {error} = response
+          if(error) {
+            this.toastService.addToast(
+              ToastSeverity.ERROR,
+              error.name,
+              error.message,
+              error.code
+            );
+          }
+          else {
+            this.toastService.addToast(
+              ToastSeverity.SUCCESS,
+              toastMessages.SUCCESS.TITLE.NEW_INVOICE,
+              toastMessages.SUCCESS.MESSAGE.NEW_INVOICE
+            )
+          }
+        },
+        error: (error) => {
+          this.toastService.addToast(
+            ToastSeverity.ERROR,
+            toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+            toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
+          );
+        },
+        complete: () => {
+          this.isAddInvoiceDialogOpen = false;
+          this.newInvoiceFormGroup.reset();
+          this.fetchVendorDetails();
+        }
+      })
+    )
   }
 
   ngOnDestroy(): void {

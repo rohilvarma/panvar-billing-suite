@@ -12,6 +12,11 @@ export enum ToastSeverity {
   CONTRAST = 'contrast',
 }
 
+export enum VendorTables {
+  VENDORS = 'vendors',
+  VENDOR_DETAILS = 'vendors_details',
+}
+
 export const toastMessages = {
   SUCCESS: {
     TITLE: {
@@ -20,12 +25,14 @@ export const toastMessages = {
       LOGOUT: 'Logout Successful',
       LOGIN: 'Login Successful',
       NEW_VENDOR: 'New Vendor Added',
+      NEW_INVOICE: 'New Invoice Added',
     },
     MESSAGE: {
       LOGOUT: 'You have successfully logged out.',
       LOGIN: 'You have successfully logged in.',
       VERIFY_EMAIL: 'Please go to the email to verify your account.',
       NEW_VENDOR: 'Vendor added successfully.',
+      NEW_INVOICE: 'Invoice added successfully.',
     },
   },
   ERROR: {
