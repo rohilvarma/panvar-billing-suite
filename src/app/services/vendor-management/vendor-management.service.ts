@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
-import { from, Observable, of, switchMap, take } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { Vendor, VendorDetails } from '../../interfaces/vendors';
-import { AuthService } from '../auth/auth.service';
 import { VendorTables } from '../../utils/constants';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -23,17 +23,11 @@ export class VendorManagementService {
    *          If the user is not signed in, an empty response is returned.
    */
   public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
-    return this.auth.userId$.pipe(
-      take(1),
-      switchMap((userId: string | null) => {
-        if (userId) {
-          return from(
-            this.client.from(VendorTables.VENDORS).select('*').eq('user_id', userId)
-          );
-        } else {
-          return of({} as PostgrestSingleResponse<Vendor[]>);
-        }
-      })
+    return from(
+      this.client
+        .from(VendorTables.VENDORS)
+        .select('*')
+        .eq('user_id', this.auth.userId)
     );
   }
 
@@ -43,38 +37,22 @@ export class VendorManagementService {
     email: string;
     user_id?: string;
   }): Observable<PostgrestSingleResponse<Vendor[]>> {
-    return this.auth.userId$.pipe(
-      take(1),
-      switchMap((userId: string | null) => {
-        if (userId) {
-          requestPayload['user_id'] = userId;
-          return this.client.from(VendorTables.VENDORS).insert([requestPayload]).select();
-        } else {
-          return of({} as PostgrestSingleResponse<Vendor[]>);
-        }
-      })
+    requestPayload['user_id'] = this.auth.userId ?? '';
+    return from(
+      this.client.from(VendorTables.VENDORS).insert([requestPayload]).select()
     );
   }
 
   public getVendorById(
     id: number
   ): Observable<PostgrestSingleResponse<Vendor>> {
-    return this.auth.userId$.pipe(
-      take(1),
-      switchMap((userId: string | null) => {
-        if (userId) {
-          return from(
-            this.client
-              .from(VendorTables.VENDORS)
-              .select('*')
-              .eq('id', id)
-              .eq('user_id', userId)
-              .single()
-          );
-        } else {
-          return of({} as PostgrestSingleResponse<Vendor>);
-        }
-      })
+    return from(
+      this.client
+        .from(VendorTables.VENDORS)
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', this.auth.userId)
+        .single()
     );
   }
 
@@ -86,22 +64,15 @@ export class VendorManagementService {
    * @returns An observable that emits a PostgrestSingleResponse containing an array of VendorDetails objects.
    *          If the user is not signed in, an empty response is returned.
    */
-  public getVendorDetailsById(id: number): Observable<PostgrestSingleResponse<VendorDetails[]>> {
-    return this.auth.userId$.pipe(
-      take(1),
-      switchMap((userId: string | null) => {
-        if (userId) {
-          return from(
-            this.client
-              .from(VendorTables.VENDOR_DETAILS)
-              .select('*')
-              .eq('vendor_id', id)
-              .eq('user_id', userId)
-          );
-        } else {
-          return of({} as PostgrestSingleResponse<VendorDetails[]>);
-        }
-      })
+  public getVendorDetailsById(
+    id: number
+  ): Observable<PostgrestSingleResponse<VendorDetails[]>> {
+    return from(
+      this.client
+        .from(VendorTables.VENDOR_DETAILS)
+        .select('*')
+        .eq('vendor_id', id)
+        .eq('user_id', this.auth.userId)
     );
   }
 
@@ -115,17 +86,15 @@ export class VendorManagementService {
    * @param requestPayload The vendor detail to insert.
    * @returns An observable that emits a PostgrestSingleResponse containing the newly inserted vendor detail.
    */
-  public addNewVendorDetailById(requestPayload: VendorDetails): Observable<PostgrestSingleResponse<VendorDetails[]>> {
-    return this.auth.userId$.pipe(
-      take(1),
-      switchMap((userId: string | null) => {
-        if (userId) {
-          requestPayload['user_id'] = userId;
-          return this.client.from(VendorTables.VENDOR_DETAILS).insert([requestPayload]).select();
-        } else {
-          return of({} as PostgrestSingleResponse<VendorDetails[]>);
-        }
-      })
-    )
+  public addNewVendorDetailById(
+    requestPayload: VendorDetails
+  ): Observable<PostgrestSingleResponse<VendorDetails[]>> {
+    requestPayload['user_id'] = this.auth.userId ?? '';
+    return from(
+      this.client
+        .from(VendorTables.VENDOR_DETAILS)
+        .insert([requestPayload])
+        .select()
+    );
   }
 }

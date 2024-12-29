@@ -111,6 +111,9 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
       pagination: true,
       paginationPageSize: paginationOptions.rows,
       paginationPageSizeSelector: paginationOptions.rowsPerPageOptions,
+      rowSelection: {
+        mode: 'multiRow'
+      },
       columnDefs: [
         {
           field: 'invoice_no',

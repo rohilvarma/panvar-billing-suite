@@ -20,7 +20,7 @@ export class AuthService {
   private session = new BehaviorSubject<AuthSession | null>(
     JSON.parse(localStorage.getItem('supabase.auth.token') || 'null')
   );
-  private userId = new BehaviorSubject<string | null>(null);
+  private currentUserId = new BehaviorSubject<string | null>(null);
   private supabase: SupabaseClient;
 
   constructor() {
@@ -54,10 +54,11 @@ export class AuthService {
       } = await this.supabase.auth.getSession();
       initialSession = session;
 
-      this.userId.next(session?.user?.id ?? null);
+      this.currentUserId.next(session?.user?.id ?? null);
 
       this.supabase.auth.onAuthStateChange((event, session) => {
         this.session.next(session);
+        this.currentUserId.next(session?.user?.id ?? null);
       });
     } catch (error) {
       console.error('Error initializing session:', error);
@@ -76,10 +77,20 @@ export class AuthService {
     return this.session.asObservable();
   }
 
-  get userId$(): Observable<string | null> {
-    return this.userId.asObservable();
+  /**
+   * Returns the ID of the currently signed-in user, or null if no user is signed in.
+   *
+   * @returns The ID of the currently signed-in user, or null.
+   */
+  get userId(): string | null {
+    return this.currentUserId.getValue();
   }
 
+  /**
+   * Returns the underlying Supabase client instance.
+   *
+   * @returns The Supabase client instance.
+   */
   get client(): SupabaseClient {
     return this.supabase;
   }
