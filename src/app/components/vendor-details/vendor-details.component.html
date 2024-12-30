@@ -6,12 +6,22 @@
         {{ this.vendor().publication_name }}
       </span>
     </div>
-    <div class="">
+    <div class="flex items-center gap-1">
+      <p-button
+        pRipple
+        label="Export as CSV"
+        icon="pi pi-file-excel"
+        iconPos="left"
+        severity="info"
+        variant="outlined"
+        size="small"
+        (click)="this.exportAsCSV()"
+      />
       <p-button
         pRipple
         label="New Invoice"
         icon="pi pi-plus"
-        iconPos="right"
+        iconPos="left"
         size="small"
         (click)="this.showAddInvoiceDialog()"
       />

@@ -229,10 +229,26 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Opens the add invoice dialog.
+   *
+   * This method is a no-op if the dialog is already open.
+   */
   public showAddInvoiceDialog(): void {
     this.isAddInvoiceDialogOpen = true;
   }
 
+  /**
+   * Adds a new invoice to the vendor associated with the current route.
+   *
+   * The form values from `newInvoiceFormGroup` are used to construct a
+   * `VendorDetails` object that is passed to the `addNewVendorDetailById`
+   * method from the `vendorManagementService`. The response is handled to
+   * display a toast notification for success or error.
+   *
+   * If the form is not valid, the form controls are marked as touched to
+   * display validation errors.
+   */
   public addNewInvoice(): void {
     const formValue = this.newInvoiceFormGroup.value;
     const requestPayload: VendorDetails = {
@@ -278,6 +294,17 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         }
       })
     )
+  }
+
+  /**
+   * Exports the grid data as a CSV file.
+   *
+   * This method uses the `exportDataAsCsv` method from the `gridApi` to export
+   * the current grid data as a CSV file. The file is saved to the user's
+   * default download location.
+   */
+  public exportAsCSV(): void {
+    this.gridApi.exportDataAsCsv();
   }
 
   ngOnDestroy(): void {
