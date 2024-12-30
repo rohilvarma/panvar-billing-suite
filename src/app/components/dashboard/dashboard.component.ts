@@ -14,7 +14,9 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
@@ -39,13 +41,14 @@ type NewVendor = {
     RouterLink,
     Skeleton,
     ButtonModule,
+    ConfirmDialog,
     Dialog,
     ReactiveFormsModule,
     InputTextModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
-  providers: [ToastService],
+  providers: [ToastService, ConfirmationService],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   public vendorDetails: WritableSignal<Vendor[]> = signal<Vendor[]>([]);
@@ -65,6 +68,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private subscriptionManager: Subscription = new Subscription();
   private toastService: ToastService = inject(ToastService);
+  private confirmationService: ConfirmationService =
+    inject(ConfirmationService);
 
   ngOnInit(): void {
     this.fetchAllVendors();
@@ -124,6 +129,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isAddVendorDialogVisible = true;
   }
 
+  /**
+   * Adds a new vendor using the form data from `newVendorForm`.
+   *
+   * If the form is valid, it constructs a `NewVendor` object and calls the
+   * `addVendor` method from the `vendorManagementService` to insert the vendor
+   * into the backend. The response is handled to display appropriate toast
+   * messages for success or error.
+   *
+   * If the form is not valid, all form controls are marked as touched to
+   * display validation errors.
+   */
   public addNewVendor(): void {
     if (this.newVendorForm.valid) {
       const newVendor: NewVendor = {
@@ -165,6 +181,75 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.newVendorForm.markAllAsTouched();
     }
+  }
+
+  /**
+   * Deletes a vendor from the backend, and updates the vendor list by
+   * fetching the latest list of vendors. If the response contains an error,
+   * it is displayed as a toast notification.
+   *
+   * @param vendor The vendor to delete.
+   */
+  private deleteVendor(vendor: Vendor): void {
+    this.subscriptionManager.add(
+      this.vendorManagementService.deleteVendorById(vendor.id).subscribe({
+        next: (response) => {
+          console.log(response);
+        },
+        error: (error) => {
+          this.toastService.addToast(
+            ToastSeverity.ERROR,
+            toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+            toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
+          );
+        },
+        complete: () => {
+          this.fetchAllVendors();
+          this.toastService.addToast(
+            ToastSeverity.SUCCESS,
+            toastMessages.SUCCESS.TITLE.DELETE_VENDOR,
+            toastMessages.SUCCESS.MESSAGE.DELETE_VENDOR
+          );
+        },
+      })
+    );
+  }
+
+  /**
+   * Confirms with the user whether or not they want to delete the given
+   * vendor, and all of its invoices. If the user confirms, the vendor is
+   * deleted by calling the `deleteVendor` method.
+   *
+   * @param vendor The vendor to delete.
+   */
+  public confirmDeleteVendor(vendor: Vendor): void {
+    this.confirmationService.confirm({
+      message: `Are you sure that you want to delete vendor, <b>${vendor.publication_name}</b>, and all of its invoices?`,
+      header: 'Confirm Deletion',
+      closable: true,
+      closeOnEscape: true,
+      defaultFocus: 'close',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true,
+      },
+      reject: () => {
+        this.toastService.addToast(
+          ToastSeverity.INFO,
+          toastMessages.INFO.TITLE.CANCELLED,
+          toastMessages.INFO.MESSAGE.CANCELLED
+        );
+      },
+      acceptButtonProps: {
+        label: 'Delete',
+        severity: 'danger',
+      },
+      accept: () => {
+        this.deleteVendor(vendor);
+      },
+    });
   }
 
   ngOnDestroy(): void {

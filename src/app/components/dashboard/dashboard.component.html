@@ -20,18 +20,20 @@
       }
     } @else {
       @for (item of this.vendorDetails(); track $index) {
-        <div class="">
-          <div
-            class="bg-white rounded-lg p-4 cursor-pointer"
-            [routerLink]="['/vendor', item.id]"
-          >
-            <div class="font-bold fs-5">
+        <div
+          class="bg-white rounded-lg p-4"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-bold fs-5 cursor-pointer" [routerLink]="['/vendor', item.id]">
               {{ item.publication_name }}
             </div>
-            <small class="text-stone-400 text-end">
-              <div class="text-stone-600 italic">- {{ item.email }}</div>
-            </small>
+            <div class="cursor-pointer">
+              <i class="pi pi-trash" style="color: red;" (click)="this.confirmDeleteVendor(item)"></i>
+            </div>
           </div>
+          <small class="text-stone-400 text-end">
+            <div class="text-stone-600 italic">- {{ item.email }}</div>
+          </small>
         </div>
       }
     }
@@ -73,3 +75,4 @@
     </div>
   </form>
 </p-dialog>
+<p-confirmdialog />
