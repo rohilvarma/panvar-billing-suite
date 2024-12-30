@@ -27,6 +27,7 @@ export const toastMessages = {
       NEW_VENDOR: 'New Vendor Added',
       NEW_INVOICE: 'New Invoice Added',
       DELETE_VENDOR: 'Vendor Deleted',
+      DELETE_INVOICE: 'Invoice Deleted',
     },
     MESSAGE: {
       LOGOUT: 'You have successfully logged out.',
@@ -35,6 +36,7 @@ export const toastMessages = {
       NEW_VENDOR: 'Vendor added successfully.',
       NEW_INVOICE: 'Invoice added successfully.',
       DELETE_VENDOR: 'Vendor deleted successfully.',
+      DELETE_INVOICE: 'Selected Invoices have been deleted successfully.',
     },
   },
   ERROR: {
