@@ -9,11 +9,22 @@
     <div class="flex items-center gap-1">
       <p-button
         pRipple
+        label="Delete Invoice"
+        icon="pi pi-trash"
+        iconPos="left"
+        severity="danger"
+        [outlined]="true"
+        [disabled]="this.deleteInvoiceIsDisabled"
+        size="small"
+        (click)="this.confirmDeleteInvoices()"
+      />
+      <p-button
+        pRipple
         label="Export as CSV"
         icon="pi pi-file-excel"
         iconPos="left"
         severity="info"
-        variant="outlined"
+        [disabled]="this.vendorDetails().length === 0"
         size="small"
         (click)="this.exportAsCSV()"
       />
@@ -173,3 +184,4 @@
     </div>
   </form>
 </p-dialog>
+<p-confirmdialog />

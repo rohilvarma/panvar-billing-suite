@@ -18,10 +18,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { RadioButton } from 'primeng/radiobutton';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { RadioButton } from 'primeng/radiobutton';
 import { RippleModule } from 'primeng/ripple';
 import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
@@ -40,6 +42,7 @@ import { formatDate } from '../../utils/helper';
   standalone: true,
   imports: [
     ButtonModule,
+    ConfirmDialog,
     RippleModule,
     Dialog,
     InputTextModule,
@@ -51,7 +54,7 @@ import { formatDate } from '../../utils/helper';
   ],
   templateUrl: './vendor-details.component.html',
   styleUrl: './vendor-details.component.css',
-  providers: [ToastService],
+  providers: [ToastService, ConfirmationService],
 })
 export class VendorDetailsComponent implements OnInit, OnDestroy {
   public vendor: WritableSignal<Vendor> = signal<Vendor>({} as Vendor);
@@ -71,6 +74,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   });
 
   public gridOptions!: GridOptions;
+  public deleteInvoiceIsDisabled: boolean = true;
 
   private vendorId: WritableSignal<number> = signal<number>(-1);
   private subscriptionManager: Subscription = new Subscription();
@@ -81,6 +85,8 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
   private toastService: ToastService = inject(ToastService);
+  private confirmationService: ConfirmationService =
+    inject(ConfirmationService);
 
   ngOnInit(): void {
     this.vendorId.set(this.route.snapshot.params['id']);
@@ -115,7 +121,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
       paginationPageSize: paginationOptions.rows,
       paginationPageSizeSelector: paginationOptions.rowsPerPageOptions,
       rowSelection: {
-        mode: 'multiRow'
+        mode: 'multiRow',
       },
       columnDefs: [
         {
@@ -164,11 +170,15 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         {
           field: 'description',
           headerName: 'Description',
-          minWidth: 300
+          minWidth: 300,
         },
       ],
       onGridReady: (params: GridReadyEvent) => {
         this.gridApi = params.api;
+      },
+      onSelectionChanged: () => {
+        this.deleteInvoiceIsDisabled =
+          this.gridApi.getSelectedRows().length === 0;
       },
     };
   }
@@ -243,6 +253,36 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Deletes the selected invoices from the backend and updates the grid by
+   * fetching the latest list of vendor details. If the response contains an
+   * error, it is displayed as a toast notification.
+   */
+  private deleteInvoices(): void {
+    const selectedIds = this.gridApi.getSelectedRows().map((row) => row.id);
+    this.subscriptionManager.add(
+      this.vendorManagementService
+        .deleteVendorDetailsById(selectedIds)
+        .subscribe({
+          error: (error) => {
+            this.toastService.addToast(
+              ToastSeverity.ERROR,
+              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
+            );
+          },
+          complete: () => {
+            this.fetchVendorDetails();
+            this.toastService.addToast(
+              ToastSeverity.SUCCESS,
+              toastMessages.SUCCESS.TITLE.DELETE_VENDOR,
+              toastMessages.SUCCESS.MESSAGE.DELETE_VENDOR
+            );
+          },
+        })
+    );
+  }
+
+  /**
    * Opens the add invoice dialog.
    *
    * This method is a no-op if the dialog is already open.
@@ -263,7 +303,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
    * display validation errors.
    */
   public addNewInvoice(): void {
-    if(this.newInvoiceFormGroup.valid) {
+    if (this.newInvoiceFormGroup.valid) {
       const formValue = this.newInvoiceFormGroup.value;
       const requestPayload: VendorDetails = {
         invoice_no: formValue.invoice_no ?? '',
@@ -276,43 +316,45 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         description: formValue.description ?? '',
         vendor_id: this.vendorId(),
       };
-      requestPayload.gross_amount = requestPayload.amount + requestPayload.amount * (Number(requestPayload.gst_rate) / 100);
+      requestPayload.gross_amount =
+        requestPayload.amount +
+        requestPayload.amount * (Number(requestPayload.gst_rate) / 100);
       this.subscriptionManager.add(
-        this.vendorManagementService.addNewVendorDetailById(requestPayload).subscribe({
-          next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
-            const {error} = response
-            if(error) {
+        this.vendorManagementService
+          .addNewVendorDetailById(requestPayload)
+          .subscribe({
+            next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
+              const { error } = response;
+              if (error) {
+                this.toastService.addToast(
+                  ToastSeverity.ERROR,
+                  error.name,
+                  error.message,
+                  error.code
+                );
+              } else {
+                this.toastService.addToast(
+                  ToastSeverity.SUCCESS,
+                  toastMessages.SUCCESS.TITLE.NEW_INVOICE,
+                  toastMessages.SUCCESS.MESSAGE.NEW_INVOICE
+                );
+              }
+            },
+            error: (error) => {
               this.toastService.addToast(
                 ToastSeverity.ERROR,
-                error.name,
-                error.message,
-                error.code
+                toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+                toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
               );
-            }
-            else {
-              this.toastService.addToast(
-                ToastSeverity.SUCCESS,
-                toastMessages.SUCCESS.TITLE.NEW_INVOICE,
-                toastMessages.SUCCESS.MESSAGE.NEW_INVOICE
-              )
-            }
-          },
-          error: (error) => {
-            this.toastService.addToast(
-              ToastSeverity.ERROR,
-              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
-              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
-            );
-          },
-          complete: () => {
-            this.isAddInvoiceDialogOpen = false;
-            this.newInvoiceFormGroup.reset();
-            this.fetchVendorDetails();
-          }
-        })
-      )
-    }
-    else {
+            },
+            complete: () => {
+              this.isAddInvoiceDialogOpen = false;
+              this.newInvoiceFormGroup.reset();
+              this.fetchVendorDetails();
+            },
+          })
+      );
+    } else {
       this.newInvoiceFormGroup.markAllAsTouched();
     }
   }
@@ -326,6 +368,47 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
    */
   public exportAsCSV(): void {
     this.gridApi.exportDataAsCsv();
+  }
+
+  /**
+   * Confirms with the user whether or not they want to delete the selected
+   * invoices. If the user confirms, the invoices are deleted by calling the
+   * `deleteInvoices` method.
+   *
+   * The confirmation dialog is displayed with a message asking the user to
+   * confirm the deletion, and buttons for 'Cancel' and 'Delete'. If the user
+   * clicks 'Cancel', a toast notification is displayed with a message indicating
+   * that the deletion was cancelled. If the user clicks 'Delete', the
+   * `deleteInvoices` method is called to delete the selected invoices.
+   */
+  public confirmDeleteInvoices(): void {
+    this.confirmationService.confirm({
+      message: `Are you sure that you want to delete these invoices?`,
+      header: 'Confirm Deletion',
+      closable: true,
+      closeOnEscape: true,
+      defaultFocus: 'close',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true,
+      },
+      reject: () => {
+        this.toastService.addToast(
+          ToastSeverity.INFO,
+          toastMessages.INFO.TITLE.CANCELLED,
+          toastMessages.INFO.MESSAGE.CANCELLED
+        );
+      },
+      acceptButtonProps: {
+        label: 'Delete',
+        severity: 'danger',
+      },
+      accept: () => {
+        this.deleteInvoices();
+      },
+    });
   }
 
   ngOnDestroy(): void {

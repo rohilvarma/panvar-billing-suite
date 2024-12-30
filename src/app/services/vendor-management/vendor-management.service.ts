@@ -103,6 +103,18 @@ export class VendorManagementService {
     );
   }
 
+  public deleteVendorDetailsById(
+    id: number[]
+  ): Observable<PostgrestSingleResponse<null>> {
+    return from(
+      this.client
+        .from(VendorTables.VENDOR_DETAILS)
+        .delete()
+        .in('id', id)
+        .eq('user_id', this.auth.userId)
+    );
+  }
+
   /**
    * Returns an observable that inserts a new vendor detail with the given request payload,
    * and emits a PostgrestSingleResponse containing the newly inserted vendor detail.
