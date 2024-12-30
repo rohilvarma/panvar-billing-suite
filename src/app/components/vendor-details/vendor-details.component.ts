@@ -274,8 +274,8 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
             this.fetchVendorDetails();
             this.toastService.addToast(
               ToastSeverity.SUCCESS,
-              toastMessages.SUCCESS.TITLE.DELETE_VENDOR,
-              toastMessages.SUCCESS.MESSAGE.DELETE_VENDOR
+              toastMessages.SUCCESS.TITLE.DELETE_INVOICE,
+              toastMessages.SUCCESS.MESSAGE.DELETE_INVOICE
             );
           },
         })

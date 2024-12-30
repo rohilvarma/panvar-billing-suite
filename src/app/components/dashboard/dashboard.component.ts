@@ -193,9 +193,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private deleteVendor(vendor: Vendor): void {
     this.subscriptionManager.add(
       this.vendorManagementService.deleteVendorById(vendor.id).subscribe({
-        next: (response) => {
-          console.log(response);
-        },
         error: (error) => {
           this.toastService.addToast(
             ToastSeverity.ERROR,
