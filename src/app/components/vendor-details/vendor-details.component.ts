@@ -19,6 +19,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { ButtonModule } from 'primeng/button';
+import { RadioButton } from 'primeng/radiobutton';
 import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { RippleModule } from 'primeng/ripple';
@@ -42,6 +43,7 @@ import { formatDate } from '../../utils/helper';
     RippleModule,
     Dialog,
     InputTextModule,
+    RadioButton,
     TextareaModule,
     AgGridAngular,
     FormsModule,
@@ -60,10 +62,11 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   public isAddInvoiceDialogOpen: boolean = false;
   public newInvoiceFormGroup = new FormGroup({
     invoice_no: new FormControl(null, [Validators.required]),
-    created_at: new FormControl(null, [Validators.required]),
+    invoice_date: new FormControl(null, [Validators.required]),
     ro_no: new FormControl(null, [Validators.required]),
     ro_date: new FormControl(null, [Validators.required]),
     amount: new FormControl(null, [Validators.required]),
+    gst_rate: new FormControl(null, [Validators.required]),
     description: new FormControl(null, [Validators.required]),
   });
 
@@ -118,20 +121,17 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         {
           field: 'invoice_no',
           headerName: 'Invoice No.',
-          maxWidth: 150,
         },
         {
-          field: 'created_at',
-          headerName: 'Date',
+          field: 'invoice_date',
+          headerName: 'Invoice Date',
           valueFormatter: (params) => {
             return formatDate(params.value);
           },
-          maxWidth: 150,
         },
         {
           field: 'ro_no',
           headerName: 'RO Number',
-          maxWidth: 150,
         },
         {
           field: 'ro_date',
@@ -139,7 +139,6 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
           valueFormatter: (params) => {
             return formatDate(params.value);
           },
-          maxWidth: 150,
         },
         {
           field: 'amount',
@@ -147,11 +146,25 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
           valueFormatter: (params) => {
             return formatCurrency(params.value, 'en-IN', 'Rs. ');
           },
-          maxWidth: 150,
+        },
+        {
+          field: 'gst_rate',
+          headerName: 'GST',
+          valueFormatter: (params) => {
+            return `${params.value}%`;
+          },
+        },
+        {
+          field: 'gross_amount',
+          headerName: 'Gross Amount',
+          valueFormatter: (params) => {
+            return formatCurrency(params.value, 'en-IN', 'Rs. ');
+          },
         },
         {
           field: 'description',
           headerName: 'Description',
+          minWidth: 300
         },
       ],
       onGridReady: (params: GridReadyEvent) => {
@@ -250,50 +263,58 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
    * display validation errors.
    */
   public addNewInvoice(): void {
-    const formValue = this.newInvoiceFormGroup.value;
-    const requestPayload: VendorDetails = {
-      invoice_no: formValue.invoice_no ?? '',
-      created_at: formValue.created_at ?? new Date(),
-      ro_no: formValue.ro_no ?? '',
-      ro_date: formValue.ro_date ?? new Date(),
-      amount: formValue.amount ?? 0,
-      description: formValue.description ?? '',
-      vendor_id: this.vendorId(),
-    };
-    this.subscriptionManager.add(
-      this.vendorManagementService.addNewVendorDetailById(requestPayload).subscribe({
-        next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
-          const {error} = response
-          if(error) {
+    if(this.newInvoiceFormGroup.valid) {
+      const formValue = this.newInvoiceFormGroup.value;
+      const requestPayload: VendorDetails = {
+        invoice_no: formValue.invoice_no ?? '',
+        invoice_date: formValue.invoice_date ?? new Date(),
+        ro_no: formValue.ro_no ?? '',
+        ro_date: formValue.ro_date ?? new Date(),
+        amount: formValue.amount ?? 0,
+        gst_rate: formValue.gst_rate ?? 5,
+        gross_amount: 0,
+        description: formValue.description ?? '',
+        vendor_id: this.vendorId(),
+      };
+      requestPayload.gross_amount = requestPayload.amount + requestPayload.amount * (Number(requestPayload.gst_rate) / 100);
+      this.subscriptionManager.add(
+        this.vendorManagementService.addNewVendorDetailById(requestPayload).subscribe({
+          next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
+            const {error} = response
+            if(error) {
+              this.toastService.addToast(
+                ToastSeverity.ERROR,
+                error.name,
+                error.message,
+                error.code
+              );
+            }
+            else {
+              this.toastService.addToast(
+                ToastSeverity.SUCCESS,
+                toastMessages.SUCCESS.TITLE.NEW_INVOICE,
+                toastMessages.SUCCESS.MESSAGE.NEW_INVOICE
+              )
+            }
+          },
+          error: (error) => {
             this.toastService.addToast(
               ToastSeverity.ERROR,
-              error.name,
-              error.message,
-              error.code
+              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
             );
+          },
+          complete: () => {
+            this.isAddInvoiceDialogOpen = false;
+            this.newInvoiceFormGroup.reset();
+            this.fetchVendorDetails();
           }
-          else {
-            this.toastService.addToast(
-              ToastSeverity.SUCCESS,
-              toastMessages.SUCCESS.TITLE.NEW_INVOICE,
-              toastMessages.SUCCESS.MESSAGE.NEW_INVOICE
-            )
-          }
-        },
-        error: (error) => {
-          this.toastService.addToast(
-            ToastSeverity.ERROR,
-            toastMessages.ERROR.TITLE.CONTACT_ADMIN,
-            toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
-          );
-        },
-        complete: () => {
-          this.isAddInvoiceDialogOpen = false;
-          this.newInvoiceFormGroup.reset();
-          this.fetchVendorDetails();
-        }
-      })
-    )
+        })
+      )
+    }
+    else {
+      this.newInvoiceFormGroup.markAllAsTouched();
+    }
   }
 
   /**
