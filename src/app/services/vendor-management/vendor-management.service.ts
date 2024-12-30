@@ -43,6 +43,15 @@ export class VendorManagementService {
     );
   }
 
+  /**
+   * Returns an observable that emits a single vendor associated with the given id.
+   *
+   * The user id is automatically set to the current user's id by this method. If the user is not
+   * signed in, an empty response is returned.
+   *
+   * @param id The id of the vendor to fetch.
+   * @returns An observable that emits a PostgrestSingleResponse containing the vendor.
+   */
   public getVendorById(
     id: number
   ): Observable<PostgrestSingleResponse<Vendor>> {
@@ -53,6 +62,24 @@ export class VendorManagementService {
         .eq('id', id)
         .eq('user_id', this.auth.userId)
         .single()
+    );
+  }
+
+  /**
+   * Returns an observable that deletes a vendor associated with the given id and the current user.
+   *
+   * @param id The id of the vendor to delete.
+   * @returns An observable that emits a PostgrestSingleResponse containing null.
+   */
+  public deleteVendorById(
+    id: number
+  ): Observable<PostgrestSingleResponse<null>> {
+    return from(
+      this.client
+        .from(VendorTables.VENDORS)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', this.auth.userId)
     );
   }
 

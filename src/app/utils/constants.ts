@@ -26,6 +26,7 @@ export const toastMessages = {
       LOGIN: 'Login Successful',
       NEW_VENDOR: 'New Vendor Added',
       NEW_INVOICE: 'New Invoice Added',
+      DELETE_VENDOR: 'Vendor Deleted',
     },
     MESSAGE: {
       LOGOUT: 'You have successfully logged out.',
@@ -33,6 +34,7 @@ export const toastMessages = {
       VERIFY_EMAIL: 'Please go to the email to verify your account.',
       NEW_VENDOR: 'Vendor added successfully.',
       NEW_INVOICE: 'Invoice added successfully.',
+      DELETE_VENDOR: 'Vendor deleted successfully.',
     },
   },
   ERROR: {
@@ -43,8 +45,12 @@ export const toastMessages = {
       CONTACT_ADMIN: 'Something went wrong. Please contact admin.',
     },
   },
-  WARN: {
-    TITLE: {},
-    MESSAGE: {},
+  INFO: {
+    TITLE: {
+      CANCELLED: 'Cancelled',
+    },
+    MESSAGE: {
+      CANCELLED: 'Action cancelled.',
+    },
   },
 };
