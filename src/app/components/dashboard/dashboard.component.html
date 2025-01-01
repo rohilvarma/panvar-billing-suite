@@ -1,84 +1,126 @@
-<section id="vendorGrid">
-  <div class="flex items-center justify-between mb-4">
-    <h1 class="font-bold text-xl">My Publications</h1>
+<section id="header">
+  <div class="flex items-center justify-center">
+    <p-selectbutton
+      [options]="this.stateOptions"
+      [(ngModel)]="isPublicationState"
+      optionLabel="label"
+      optionValue="value"
+      aria-labelledby="basic"
+      [allowEmpty]="false"
+    />
+  </div>
+</section>
+<section id="cardGrid">
+  <div class="flex items-center justify-between my-4">
+    <h1 class="font-bold text-xl">
+      @if(this.isPublicationState) { Publications } @else { Clients }
+    </h1>
     <p-button
-      label="Add Vendor"
+      [label]="this.isPublicationState ? 'Add Publication' : 'Add Client'"
       icon="pi pi-plus"
       [disabled]="this.isLoadingPublications"
       size="small"
       iconPos="right"
-      (click)="this.showAddVendorDialog()"
+      (click)="this.showAddPublicationDialog()"
     />
   </div>
   <div class="grid grid-cols-4 gap-2">
-    @if (this.isLoadingPublications) {
-      @for (_ of this.counterArray(3); track $index) {
+    @if (this.isPublicationState) {
+      @if (this.isLoadingPublications) { @for (_ of this.counterArray(3); track
+        $index) {
         <div class="bg-white rounded-lg p-4">
           <p-skeleton styleClass="mb-2" />
           <p-skeleton styleClass="mb-2" />
         </div>
-      }
-    } @else {
-      @if(this.vendorDetails().length === 0) {
-        <h2 class="text-2xl text-gray-500 font-semibold text-center  col-span-4 mt-32">
-          Get started by adding your first vendor!
+        } } @else { @if(this.publicationDetails().length === 0) {
+        <h2
+          class="text-2xl text-gray-500 font-semibold text-center col-span-4 mt-32"
+        >
+          Get started by adding your first publication!
         </h2>
-      }
-      @else {
-        @for (item of this.vendorDetails(); track $index) {
-          <div
-            class="bg-white rounded-lg p-4"
+        } @else { @for (item of this.publicationDetails(); track $index) {
+        <div class="bg-white rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div
+              class="font-bold fs-5 cursor-pointer"
+              [routerLink]="['/vendor', item.id]"
             >
-            <div class="flex items-center justify-between mb-2">
-              <div class="font-bold fs-5 cursor-pointer" [routerLink]="['/vendor', item.id]">
-                {{ item.publication_name }}
-              </div>
-              <div class="cursor-pointer">
-                <i class="pi pi-trash" style="color: red;" (click)="this.confirmDeleteVendor(item)"></i>
-              </div>
+              {{ item.publication_name }}
             </div>
-            <small class="text-stone-400 text-end">
-              <div class="text-stone-600 italic">- {{ item.email }}</div>
-            </small>
+            <div class="cursor-pointer">
+              <i
+                class="pi pi-trash"
+                style="color: red"
+                (click)="this.confirmDeletePublication(item)"
+              ></i>
+            </div>
           </div>
-        }
-      }
+          <small class="text-stone-400 text-end">
+            <div class="text-stone-600 italic">- {{ item.email }}</div>
+          </small>
+        </div>
+        } } }
+    }
+    @else {
+      this is client section
     }
   </div>
 </section>
 
 <p-dialog
-  header="Add New Vendor"
+  header="Add New Publication"
   [modal]="true"
-  [(visible)]="this.isAddVendorDialogVisible"
+  [(visible)]="this.isAddPublicationDialogVisible"
   [style]="{ width: '50rem' }"
 >
-  <form [formGroup]="this.newVendorForm" class="">
+  <form [formGroup]="this.newPublicationForm" class="">
     <div class="mb-6">
       <label for="name" class="font-bold">Name:</label>
-      <input pInputText formControlName="name" id="name" type="text" class="w-full">
-      @if (this.newVendorForm.get('name')?.invalid && this.newVendorForm.get('name')?.touched) {
-        <small class="text-red-500">Please enter a valid name.</small>
+      <input
+        pInputText
+        formControlName="name"
+        id="name"
+        type="text"
+        class="w-full"
+      />
+      @if (this.newPublicationForm.get('name')?.invalid &&
+      this.newPublicationForm.get('name')?.touched) {
+      <small class="text-red-500">Please enter a valid name.</small>
       }
     </div>
     <div class="mb-6">
       <label for="publication_name" class="font-bold">Publication Name:</label>
-      <input pInputText formControlName="publication_name" id="publication_name" type="text" class="w-full">
-      @if (this.newVendorForm.get('publication_name')?.invalid && this.newVendorForm.get('publication_name')?.touched) {
-        <small class="text-red-500">Please enter a valid publication name.</small>
+      <input
+        pInputText
+        formControlName="publication_name"
+        id="publication_name"
+        type="text"
+        class="w-full"
+      />
+      @if (this.newPublicationForm.get('publication_name')?.invalid &&
+      this.newPublicationForm.get('publication_name')?.touched) {
+      <small class="text-red-500">Please enter a valid publication name.</small>
       }
     </div>
     <div class="mb-6">
       <label for="email" class="font-bold">Email:</label>
-      <input pInputText formControlName="email" id="email" type="email" class="w-full">
-      @if (this.newVendorForm.get('email')?.hasError('required') && this.newVendorForm.get('email')?.touched) {
-        <small class="text-red-500">Please enter your email.</small>
-      } @else if (this.newVendorForm.get('email')?.hasError('email') && this.newVendorForm.get('email')?.touched) {
-        <small class="text-red-500">Please enter a valid email address.</small>
+      <input
+        pInputText
+        formControlName="email"
+        id="email"
+        type="email"
+        class="w-full"
+      />
+      @if (this.newPublicationForm.get('email')?.hasError('required') &&
+      this.newPublicationForm.get('email')?.touched) {
+      <small class="text-red-500">Please enter your email.</small>
+      } @else if (this.newPublicationForm.get('email')?.hasError('email') &&
+      this.newPublicationForm.get('email')?.touched) {
+      <small class="text-red-500">Please enter a valid email address.</small>
       }
     </div>
     <div class="">
-      <p-button label="Add" [severity]="" (click)="this.addNewVendor()"  />
+      <p-button label="Add" [severity]="" (click)="this.addNewPublication()" />
     </div>
   </form>
 </p-dialog>

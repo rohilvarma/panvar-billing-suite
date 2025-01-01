@@ -9,9 +9,11 @@ import {
 import {
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { SelectButton } from 'primeng/selectbutton';
 import { RouterLink } from '@angular/router';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { ConfirmationService } from 'primeng/api';
@@ -35,6 +37,11 @@ type NewPublication = {
   user_id?: string;
 };
 
+type StateType = {
+  label: string;
+  value: boolean;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -43,6 +50,8 @@ type NewPublication = {
     Skeleton,
     ButtonModule,
     ConfirmDialog,
+    FormsModule,
+    SelectButton,
     Dialog,
     ReactiveFormsModule,
     InputTextModule,
@@ -52,12 +61,19 @@ type NewPublication = {
   providers: [ToastService, ConfirmationService],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  public vendorDetails: WritableSignal<Publication[]> = signal<Publication[]>([]);
+  public publicationDetails: WritableSignal<Publication[]> = signal<
+    Publication[]
+  >([]);
   public counterArray = counterArray;
   public isLoadingPublications: boolean = false;
+  public isPublicationState: boolean = true;
+  public stateOptions: any[] = [
+    { label: 'Publications', value: true },
+    { label: 'Clients', value: false },
+  ];
 
-  public isAddVendorDialogVisible: boolean = false;
-  public newVendorForm: FormGroup = new FormGroup({
+  public isAddPublicationDialogVisible: boolean = false;
+  public newPublicationForm: FormGroup = new FormGroup({
     name: new FormControl(null, [Validators.required]),
     email: new FormControl(null, [Validators.required, Validators.email]),
     publication_name: new FormControl(null, [Validators.required]),
@@ -65,26 +81,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private subscriptionManager: Subscription = new Subscription();
   private toastService: ToastService = inject(ToastService);
-  private confirmationService: ConfirmationService = inject(ConfirmationService);
+  private confirmationService: ConfirmationService =
+    inject(ConfirmationService);
   private publicationService: PublicationService = inject(PublicationService);
 
   ngOnInit(): void {
-    this.fetchAllVendors();
+    this.fetchAllPublications();
   }
 
-  /**
-   * Fetches the list of vendors from the backend and updates the
-   * `vendorDetails` signal with the response. If the response contains an
-   * error, it is displayed as a toast notification.
-   */
-  private fetchAllVendors(): void {
+  private fetchAllPublications(): void {
     this.toggleIsLoadingPublications();
     this.subscriptionManager.add(
       this.publicationService.getAllPublications().subscribe({
         next: (response: PostgrestSingleResponse<Publication[]>) => {
           const { data, error } = response;
           if (data) {
-            this.vendorDetails.set(data);
+            this.publicationDetails.set(data);
           } else {
             this.toastService.addToast(
               ToastSeverity.ERROR,
@@ -100,7 +112,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             toastMessages.ERROR.TITLE.CONTACT_ADMIN,
             toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
           );
-          this.vendorDetails.set([]);
+          this.publicationDetails.set([]);
         },
         complete: () => {
           this.toggleIsLoadingPublications();
@@ -109,43 +121,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * Toggles the `isLoadingPublications` flag. This flag is used to conditionally
-   * render the vendor list or a loading indicator.
-   */
   private toggleIsLoadingPublications(): void {
     this.isLoadingPublications = !this.isLoadingPublications;
   }
 
-  /**
-   * Opens the add vendor dialog.
-   *
-   * This method is a no-op if the dialog is already open.
-   */
-  public showAddVendorDialog(): void {
-    this.isAddVendorDialogVisible = true;
+  public showAddPublicationDialog(): void {
+    this.isAddPublicationDialogVisible = true;
   }
 
-  /**
-   * Adds a new vendor using the form data from `newVendorForm`.
-   *
-   * If the form is valid, it constructs a `NewVendor` object and calls the
-   * `addVendor` method from the `vendorManagementService` to insert the vendor
-   * into the backend. The response is handled to display appropriate toast
-   * messages for success or error.
-   *
-   * If the form is not valid, all form controls are marked as touched to
-   * display validation errors.
-   */
-  public addNewVendor(): void {
-    if (this.newVendorForm.valid) {
-      const newVendor: NewPublication = {
-        name: this.newVendorForm.get('name')?.value!,
-        publication_name: this.newVendorForm.get('publication_name')?.value!,
-        email: this.newVendorForm.get('email')?.value!,
+  public addNewPublication(): void {
+    if (this.newPublicationForm.valid) {
+      const newPublication: NewPublication = {
+        name: this.newPublicationForm.get('name')?.value!,
+        publication_name:
+          this.newPublicationForm.get('publication_name')?.value!,
+        email: this.newPublicationForm.get('email')?.value!,
       };
       this.subscriptionManager.add(
-        this.publicationService.addPublication(newVendor).subscribe({
+        this.publicationService.addPublication(newPublication).subscribe({
           next: (response: PostgrestSingleResponse<Publication[]>) => {
             const { error } = response;
             if (error) {
@@ -165,31 +158,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
             );
           },
           complete: () => {
-            this.isAddVendorDialogVisible = false;
-            this.fetchAllVendors();
+            this.isAddPublicationDialogVisible = false;
+            this.fetchAllPublications();
             this.toastService.addToast(
               ToastSeverity.SUCCESS,
-              toastMessages.SUCCESS.TITLE.NEW_VENDOR,
-              toastMessages.SUCCESS.MESSAGE.NEW_VENDOR
+              toastMessages.SUCCESS.TITLE.NEW_PUBLICATION,
+              toastMessages.SUCCESS.MESSAGE.NEW_PUBLICATION
             );
           },
         })
       );
     } else {
-      this.newVendorForm.markAllAsTouched();
+      this.newPublicationForm.markAllAsTouched();
     }
   }
 
-  /**
-   * Deletes a vendor from the backend, and updates the vendor list by
-   * fetching the latest list of vendors. If the response contains an error,
-   * it is displayed as a toast notification.
-   *
-   * @param vendor The vendor to delete.
-   */
-  private deleteVendor(vendor: Publication): void {
+  private deletePublication(publication: Publication): void {
     this.subscriptionManager.add(
-      this.publicationService.deletePublicationById(vendor.id).subscribe({
+      this.publicationService.deletePublicationById(publication.id).subscribe({
         error: (error) => {
           this.toastService.addToast(
             ToastSeverity.ERROR,
@@ -198,27 +184,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
           );
         },
         complete: () => {
-          this.fetchAllVendors();
+          this.fetchAllPublications();
           this.toastService.addToast(
             ToastSeverity.SUCCESS,
-            toastMessages.SUCCESS.TITLE.DELETE_VENDOR,
-            toastMessages.SUCCESS.MESSAGE.DELETE_VENDOR
+            toastMessages.SUCCESS.TITLE.DELETE_PUBLICATION,
+            toastMessages.SUCCESS.MESSAGE.DELETE_PUBLICATION
           );
         },
       })
     );
   }
 
-  /**
-   * Confirms with the user whether or not they want to delete the given
-   * vendor, and all of its invoices. If the user confirms, the vendor is
-   * deleted by calling the `deleteVendor` method.
-   *
-   * @param vendor The vendor to delete.
-   */
-  public confirmDeleteVendor(vendor: Publication): void {
+  public confirmDeletePublication(publication: Publication): void {
     this.confirmationService.confirm({
-      message: `Are you sure that you want to delete publication, <b>${vendor.publication_name}</b>, and all of its invoices?`,
+      message: `Are you sure that you want to delete publication, <b>${publication.publication_name}</b>, and all of its invoices?`,
       header: 'Confirm Deletion',
       closable: true,
       closeOnEscape: true,
@@ -241,7 +220,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         severity: 'danger',
       },
       accept: () => {
-        this.deleteVendor(vendor);
+        this.deletePublication(publication);
       },
     });
   }
