@@ -1,6 +1,6 @@
 import {PostgrestError} from '@supabase/supabase-js';
 
-export interface Vendor {
+export interface Publication {
   id: number;
   created_at: Date;
   user_id: string;
@@ -9,15 +9,15 @@ export interface Vendor {
   publication_name: string;
 }
 
-export interface VendorResponse {
+export interface PublicationResponse {
   error: PostgrestError
-  data: Vendor[];
+  data: Publication[];
   count: any;
   status: number;
   statusText: string;
 }
 
-export interface VendorDetails {
+export interface PublicationDetails {
   id?: number;
   invoice_date: Date;
   edited_at?: Date;

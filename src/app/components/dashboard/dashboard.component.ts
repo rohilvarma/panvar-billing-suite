@@ -21,13 +21,14 @@ import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
 import { Subscription } from 'rxjs';
-import { Vendor } from '../../interfaces/publications';
+import { Publication } from '../../interfaces/publications';
 import { ToastService } from '../../services/toast/toast.service';
-import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
+
 import { toastMessages, ToastSeverity } from '../../utils/constants';
 import { counterArray } from '../../utils/helper';
+import { PublicationService } from '../../services/publication/publication.service';
 
-type NewVendor = {
+type NewPublication = {
   name: string;
   publication_name: string;
   email: string;
@@ -51,13 +52,9 @@ type NewVendor = {
   providers: [ToastService, ConfirmationService],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  public vendorDetails: WritableSignal<Vendor[]> = signal<Vendor[]>([]);
+  public vendorDetails: WritableSignal<Publication[]> = signal<Publication[]>([]);
   public counterArray = counterArray;
-  public isLoadingVendors: boolean = false;
-
-  private vendorManagementService: VendorManagementService = inject(
-    VendorManagementService
-  );
+  public isLoadingPublications: boolean = false;
 
   public isAddVendorDialogVisible: boolean = false;
   public newVendorForm: FormGroup = new FormGroup({
@@ -68,8 +65,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private subscriptionManager: Subscription = new Subscription();
   private toastService: ToastService = inject(ToastService);
-  private confirmationService: ConfirmationService =
-    inject(ConfirmationService);
+  private confirmationService: ConfirmationService = inject(ConfirmationService);
+  private publicationService: PublicationService = inject(PublicationService);
 
   ngOnInit(): void {
     this.fetchAllVendors();
@@ -81,10 +78,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * error, it is displayed as a toast notification.
    */
   private fetchAllVendors(): void {
-    this.toggleIsLoadingVendors();
+    this.toggleIsLoadingPublications();
     this.subscriptionManager.add(
-      this.vendorManagementService.getAllVendors().subscribe({
-        next: (response: PostgrestSingleResponse<Vendor[]>) => {
+      this.publicationService.getAllPublications().subscribe({
+        next: (response: PostgrestSingleResponse<Publication[]>) => {
           const { data, error } = response;
           if (data) {
             this.vendorDetails.set(data);
@@ -106,18 +103,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.vendorDetails.set([]);
         },
         complete: () => {
-          this.toggleIsLoadingVendors();
+          this.toggleIsLoadingPublications();
         },
       })
     );
   }
 
   /**
-   * Toggles the `isLoadingVendors` flag. This flag is used to conditionally
+   * Toggles the `isLoadingPublications` flag. This flag is used to conditionally
    * render the vendor list or a loading indicator.
    */
-  private toggleIsLoadingVendors(): void {
-    this.isLoadingVendors = !this.isLoadingVendors;
+  private toggleIsLoadingPublications(): void {
+    this.isLoadingPublications = !this.isLoadingPublications;
   }
 
   /**
@@ -142,14 +139,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   public addNewVendor(): void {
     if (this.newVendorForm.valid) {
-      const newVendor: NewVendor = {
+      const newVendor: NewPublication = {
         name: this.newVendorForm.get('name')?.value!,
         publication_name: this.newVendorForm.get('publication_name')?.value!,
         email: this.newVendorForm.get('email')?.value!,
       };
       this.subscriptionManager.add(
-        this.vendorManagementService.addVendor(newVendor).subscribe({
-          next: (response: PostgrestSingleResponse<Vendor[]>) => {
+        this.publicationService.addPublication(newVendor).subscribe({
+          next: (response: PostgrestSingleResponse<Publication[]>) => {
             const { error } = response;
             if (error) {
               this.toastService.addToast(
@@ -190,9 +187,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
    *
    * @param vendor The vendor to delete.
    */
-  private deleteVendor(vendor: Vendor): void {
+  private deleteVendor(vendor: Publication): void {
     this.subscriptionManager.add(
-      this.vendorManagementService.deleteVendorById(vendor.id).subscribe({
+      this.publicationService.deletePublicationById(vendor.id).subscribe({
         error: (error) => {
           this.toastService.addToast(
             ToastSeverity.ERROR,
@@ -219,9 +216,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
    *
    * @param vendor The vendor to delete.
    */
-  public confirmDeleteVendor(vendor: Vendor): void {
+  public confirmDeleteVendor(vendor: Publication): void {
     this.confirmationService.confirm({
-      message: `Are you sure that you want to delete vendor, <b>${vendor.publication_name}</b>, and all of its invoices?`,
+      message: `Are you sure that you want to delete publication, <b>${vendor.publication_name}</b>, and all of its invoices?`,
       header: 'Confirm Deletion',
       closable: true,
       closeOnEscape: true,
