@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
 import { from, Observable } from 'rxjs';
-import { Vendor, VendorDetails } from '../../interfaces/vendors';
-import { VendorTables } from '../../utils/constants';
+import { Vendor, VendorDetails } from '../../interfaces/publications';
+import { PublicationTables } from '../../utils/constants';
 import { AuthService } from '../auth/auth.service';
 
 @Injectable({
@@ -25,7 +25,7 @@ export class VendorManagementService {
   public getAllVendors(): Observable<PostgrestSingleResponse<Vendor[]>> {
     return from(
       this.client
-        .from(VendorTables.VENDORS)
+        .from(PublicationTables.PUBLICATIONS)
         .select('*')
         .eq('user_id', this.auth.userId)
     );
@@ -39,7 +39,7 @@ export class VendorManagementService {
   }): Observable<PostgrestSingleResponse<Vendor[]>> {
     requestPayload['user_id'] = this.auth.userId ?? '';
     return from(
-      this.client.from(VendorTables.VENDORS).insert([requestPayload]).select()
+      this.client.from(PublicationTables.PUBLICATIONS).insert([requestPayload]).select()
     );
   }
 
@@ -57,7 +57,7 @@ export class VendorManagementService {
   ): Observable<PostgrestSingleResponse<Vendor>> {
     return from(
       this.client
-        .from(VendorTables.VENDORS)
+        .from(PublicationTables.PUBLICATIONS)
         .select('*')
         .eq('id', id)
         .eq('user_id', this.auth.userId)
@@ -76,7 +76,7 @@ export class VendorManagementService {
   ): Observable<PostgrestSingleResponse<null>> {
     return from(
       this.client
-        .from(VendorTables.VENDORS)
+        .from(PublicationTables.PUBLICATIONS)
         .delete()
         .eq('id', id)
         .eq('user_id', this.auth.userId)
@@ -96,9 +96,9 @@ export class VendorManagementService {
   ): Observable<PostgrestSingleResponse<VendorDetails[]>> {
     return from(
       this.client
-        .from(VendorTables.VENDOR_DETAILS)
+        .from(PublicationTables.PUBLLICATION_DETAILS)
         .select('*')
-        .eq('vendor_id', id)
+        .eq('publication_id', id)
         .eq('user_id', this.auth.userId)
     );
   }
@@ -108,7 +108,7 @@ export class VendorManagementService {
   ): Observable<PostgrestSingleResponse<null>> {
     return from(
       this.client
-        .from(VendorTables.VENDOR_DETAILS)
+        .from(PublicationTables.PUBLLICATION_DETAILS)
         .delete()
         .in('id', id)
         .eq('user_id', this.auth.userId)
@@ -131,7 +131,7 @@ export class VendorManagementService {
     requestPayload['user_id'] = this.auth.userId ?? '';
     return from(
       this.client
-        .from(VendorTables.VENDOR_DETAILS)
+        .from(PublicationTables.PUBLLICATION_DETAILS)
         .insert([requestPayload])
         .select()
     );

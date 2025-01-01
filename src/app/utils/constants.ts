@@ -12,9 +12,9 @@ export enum ToastSeverity {
   CONTRAST = 'contrast',
 }
 
-export enum VendorTables {
-  VENDORS = 'vendors',
-  VENDOR_DETAILS = 'vendors_details',
+export enum PublicationTables {
+  PUBLICATIONS = 'publications',
+  PUBLLICATION_DETAILS = 'publication_details',
 }
 
 export const toastMessages = {

@@ -21,7 +21,7 @@ import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
 import { Subscription } from 'rxjs';
-import { Vendor } from '../../interfaces/vendors';
+import { Vendor } from '../../interfaces/publications';
 import { ToastService } from '../../services/toast/toast.service';
 import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
 import { toastMessages, ToastSeverity } from '../../utils/constants';

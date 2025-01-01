@@ -27,7 +27,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { RippleModule } from 'primeng/ripple';
 import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
-import { Vendor, VendorDetails } from '../../interfaces/vendors';
+import { Vendor, VendorDetails } from '../../interfaces/publications';
 import { ToastService } from '../../services/toast/toast.service';
 import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
 import {
@@ -314,7 +314,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         gst_rate: formValue.gst_rate ?? 5,
         gross_amount: 0,
         description: formValue.description ?? '',
-        vendor_id: this.vendorId(),
+        publication_id: this.vendorId(),
       };
       requestPayload.gross_amount =
         requestPayload.amount +

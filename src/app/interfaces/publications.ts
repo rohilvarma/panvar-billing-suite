@@ -29,5 +29,5 @@ export interface VendorDetails {
   gst_rate: number;
   gross_amount: number;
   description: string;
-  vendor_id: number;
+  publication_id: number;
 }
