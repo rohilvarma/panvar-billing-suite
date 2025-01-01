@@ -27,15 +27,15 @@ import { RadioButton } from 'primeng/radiobutton';
 import { RippleModule } from 'primeng/ripple';
 import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
-import { Vendor, VendorDetails } from '../../interfaces/publications';
+import { Publication, PublicationDetails } from '../../interfaces/publications';
 import { ToastService } from '../../services/toast/toast.service';
-import { VendorManagementService } from '../../services/vendor-management/vendor-management.service';
 import {
   paginationOptions,
   toastMessages,
   ToastSeverity,
 } from '../../utils/constants';
 import { formatDate } from '../../utils/helper';
+import { PublicationService } from '../../services/publication/publication.service';
 
 @Component({
   selector: 'app-vendor-details',
@@ -57,9 +57,9 @@ import { formatDate } from '../../utils/helper';
   providers: [ToastService, ConfirmationService],
 })
 export class VendorDetailsComponent implements OnInit, OnDestroy {
-  public vendor: WritableSignal<Vendor> = signal<Vendor>({} as Vendor);
-  public vendorDetails: WritableSignal<VendorDetails[]> = signal<
-    VendorDetails[]
+  public vendor: WritableSignal<Publication> = signal<Publication>({} as Publication);
+  public vendorDetails: WritableSignal<PublicationDetails[]> = signal<
+    PublicationDetails[]
   >([]);
 
   public isAddInvoiceDialogOpen: boolean = false;
@@ -78,15 +78,12 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
 
   private vendorId: WritableSignal<number> = signal<number>(-1);
   private subscriptionManager: Subscription = new Subscription();
-  private vendorManagementService: VendorManagementService = inject(
-    VendorManagementService
-  );
+  private publicationSerivce: PublicationService = inject(PublicationService);
   private gridApi: GridApi = {} as GridApi;
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
   private toastService: ToastService = inject(ToastService);
-  private confirmationService: ConfirmationService =
-    inject(ConfirmationService);
+  private confirmationService: ConfirmationService = inject(ConfirmationService);
 
   ngOnInit(): void {
     this.vendorId.set(this.route.snapshot.params['id']);
@@ -185,8 +182,8 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
 
   private fetchVendorDetails(): void {
     this.subscriptionManager.add(
-      this.vendorManagementService
-        .getVendorDetailsById(this.vendorId())
+      this.publicationSerivce
+        .getPublicationDetailsById(this.vendorId())
         .subscribe({
           next: (response: any) => {
             const { data, error } = response;
@@ -223,8 +220,8 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
    */
   private fetchVendor(): void {
     this.subscriptionManager.add(
-      this.vendorManagementService.getVendorById(this.vendorId()).subscribe({
-        next: (response: PostgrestSingleResponse<Vendor>) => {
+      this.publicationSerivce.getPublicationById(this.vendorId()).subscribe({
+        next: (response: PostgrestSingleResponse<Publication>) => {
           const { data, error } = response;
           if (data) {
             this.vendor.set(data);
@@ -260,8 +257,8 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   private deleteInvoices(): void {
     const selectedIds = this.gridApi.getSelectedRows().map((row) => row.id);
     this.subscriptionManager.add(
-      this.vendorManagementService
-        .deleteVendorDetailsById(selectedIds)
+      this.publicationSerivce
+        .deletePublicationDetailsById(selectedIds)
         .subscribe({
           error: (error) => {
             this.toastService.addToast(
@@ -305,7 +302,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   public addNewInvoice(): void {
     if (this.newInvoiceFormGroup.valid) {
       const formValue = this.newInvoiceFormGroup.value;
-      const requestPayload: VendorDetails = {
+      const requestPayload: PublicationDetails = {
         invoice_no: formValue.invoice_no ?? '',
         invoice_date: formValue.invoice_date ?? new Date(),
         ro_no: formValue.ro_no ?? '',
@@ -320,10 +317,10 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         requestPayload.amount +
         requestPayload.amount * (Number(requestPayload.gst_rate) / 100);
       this.subscriptionManager.add(
-        this.vendorManagementService
-          .addNewVendorDetailById(requestPayload)
+        this.publicationSerivce
+          .addNewPublicationDetailById(requestPayload)
           .subscribe({
-            next: (response: PostgrestSingleResponse<VendorDetails[]>) => {
+            next: (response: PostgrestSingleResponse<PublicationDetails[]>) => {
               const { error } = response;
               if (error) {
                 this.toastService.addToast(

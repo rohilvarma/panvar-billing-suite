@@ -14,7 +14,7 @@ export enum ToastSeverity {
 
 export enum PublicationTables {
   PUBLICATIONS = 'publications',
-  PUBLLICATION_DETAILS = 'publication_details',
+  PUBLICATION_DETAILS = 'publication_details',
 }
 
 export const toastMessages = {
