@@ -3,7 +3,7 @@
     <div class="text-xl">
       <span class="font-bold"> Publication Name: </span>
       <span class="font-medium">
-        {{ this.vendor().publication_name }}
+        {{ this.publication().publication_name }}
       </span>
     </div>
     <div class="flex items-center gap-1">
@@ -24,7 +24,7 @@
         icon="pi pi-file-excel"
         iconPos="left"
         severity="info"
-        [disabled]="this.vendorDetails().length === 0"
+        [disabled]="this.publicationDetails().length === 0"
         size="small"
         (click)="this.exportAsCSV()"
       />
@@ -40,7 +40,7 @@
   </div>
 </section>
 
-<section id="vendorGrid" class="mt-2">
+<section id="publicationGrid" class="mt-2">
   <ag-grid-angular
     class="ag-theme-quartz"
     style="height: 600px"
