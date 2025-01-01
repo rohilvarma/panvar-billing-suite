@@ -27,7 +27,11 @@ import { RadioButton } from 'primeng/radiobutton';
 import { RippleModule } from 'primeng/ripple';
 import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
-import { Publication, PublicationDetails } from '../../interfaces/publications';
+import {
+  Publication,
+  PublicationDetails,
+} from '../../interfaces/publications';
+import { PublicationService } from '../../services/publication/publication.service';
 import { ToastService } from '../../services/toast/toast.service';
 import {
   paginationOptions,
@@ -35,10 +39,9 @@ import {
   ToastSeverity,
 } from '../../utils/constants';
 import { formatDate } from '../../utils/helper';
-import { PublicationService } from '../../services/publication/publication.service';
 
 @Component({
-  selector: 'app-vendor-details',
+  selector: 'app-publication-details',
   standalone: true,
   imports: [
     ButtonModule,
@@ -52,13 +55,15 @@ import { PublicationService } from '../../services/publication/publication.servi
     FormsModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './vendor-details.component.html',
-  styleUrl: './vendor-details.component.css',
+  templateUrl: './publication-details.component.html',
+  styleUrl: './publication-details.component.css',
   providers: [ToastService, ConfirmationService],
 })
-export class VendorDetailsComponent implements OnInit, OnDestroy {
-  public vendor: WritableSignal<Publication> = signal<Publication>({} as Publication);
-  public vendorDetails: WritableSignal<PublicationDetails[]> = signal<
+export class PublicationDetailsComponent implements OnInit, OnDestroy {
+  public publication: WritableSignal<Publication> = signal<Publication>(
+    {} as Publication
+  );
+  public publicationDetails: WritableSignal<PublicationDetails[]> = signal<
     PublicationDetails[]
   >([]);
 
@@ -76,37 +81,22 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
   public gridOptions!: GridOptions;
   public deleteInvoiceIsDisabled: boolean = true;
 
-  private vendorId: WritableSignal<number> = signal<number>(-1);
+  private publicationId: WritableSignal<number> = signal<number>(-1);
   private subscriptionManager: Subscription = new Subscription();
   private publicationSerivce: PublicationService = inject(PublicationService);
   private gridApi: GridApi = {} as GridApi;
   private route: ActivatedRoute = inject(ActivatedRoute);
   private router: Router = inject(Router);
   private toastService: ToastService = inject(ToastService);
-  private confirmationService: ConfirmationService = inject(ConfirmationService);
+  private confirmationService: ConfirmationService =
+    inject(ConfirmationService);
 
   ngOnInit(): void {
-    this.vendorId.set(this.route.snapshot.params['id']);
+    this.publicationId.set(this.route.snapshot.params['id']);
     this.initialiseGridOptions();
-    this.fetchVendor();
+    this.fetchPublication();
   }
 
-  /**
-   * Initializes the grid options with default column definitions and other options.
-   * The columns are:
-   * - Invoice No.
-   * - Date
-   * - RO Number
-   * - RO Date
-   * - Amount
-   * - Description
-   *
-   * The grid is also configured to use pagination with a page size of 10, and
-   * the page size can be changed by the user.
-   *
-   * The `onGridReady` callback is used to save the grid API to an instance
-   * variable so that it can be used later to manipulate the grid.
-   */
   private initialiseGridOptions(): void {
     this.gridOptions = {
       defaultColDef: {
@@ -180,15 +170,15 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
     };
   }
 
-  private fetchVendorDetails(): void {
+  private fetchPublicationDetails(): void {
     this.subscriptionManager.add(
       this.publicationSerivce
-        .getPublicationDetailsById(this.vendorId())
+        .getPublicationDetailsById(this.publicationId())
         .subscribe({
           next: (response: any) => {
             const { data, error } = response;
             if (data) {
-              this.vendorDetails.set(data);
+              this.publicationDetails.set(data);
             } else {
               this.toastService.addToast(
                 ToastSeverity.ERROR,
@@ -206,54 +196,45 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
             );
           },
           complete: () => {
-            this.gridApi.setGridOption('rowData', this.vendorDetails());
+            this.gridApi.setGridOption('rowData', this.publicationDetails());
           },
         })
     );
   }
 
-  /**
-   * Fetches the vendor details from the backend and updates the
-   * `vendor` signal with the response. If the response contains an
-   * error, it is displayed as a toast notification and the user is
-   * redirected to the home page.
-   */
-  private fetchVendor(): void {
+  private fetchPublication(): void {
     this.subscriptionManager.add(
-      this.publicationSerivce.getPublicationById(this.vendorId()).subscribe({
-        next: (response: PostgrestSingleResponse<Publication>) => {
-          const { data, error } = response;
-          if (data) {
-            this.vendor.set(data);
-          } else {
-            this.router.navigate(['/']);
+      this.publicationSerivce
+        .getPublicationById(this.publicationId())
+        .subscribe({
+          next: (response: PostgrestSingleResponse<Publication>) => {
+            const { data, error } = response;
+            if (data) {
+              this.publication.set(data);
+            } else {
+              this.router.navigate(['/']);
+              this.toastService.addToast(
+                ToastSeverity.ERROR,
+                error.name,
+                error.message,
+                error.code
+              );
+            }
+          },
+          error: (error) => {
             this.toastService.addToast(
               ToastSeverity.ERROR,
-              error.name,
-              error.message,
-              error.code
+              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
             );
-          }
-        },
-        error: (error) => {
-          this.toastService.addToast(
-            ToastSeverity.ERROR,
-            toastMessages.ERROR.TITLE.CONTACT_ADMIN,
-            toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
-          );
-        },
-        complete: () => {
-          this.fetchVendorDetails();
-        },
-      })
+          },
+          complete: () => {
+            this.fetchPublicationDetails();
+          },
+        })
     );
   }
 
-  /**
-   * Deletes the selected invoices from the backend and updates the grid by
-   * fetching the latest list of vendor details. If the response contains an
-   * error, it is displayed as a toast notification.
-   */
   private deleteInvoices(): void {
     const selectedIds = this.gridApi.getSelectedRows().map((row) => row.id);
     this.subscriptionManager.add(
@@ -268,7 +249,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
             );
           },
           complete: () => {
-            this.fetchVendorDetails();
+            this.fetchPublicationDetails();
             this.toastService.addToast(
               ToastSeverity.SUCCESS,
               toastMessages.SUCCESS.TITLE.DELETE_INVOICE,
@@ -288,17 +269,6 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
     this.isAddInvoiceDialogOpen = true;
   }
 
-  /**
-   * Adds a new invoice to the vendor associated with the current route.
-   *
-   * The form values from `newInvoiceFormGroup` are used to construct a
-   * `VendorDetails` object that is passed to the `addNewVendorDetailById`
-   * method from the `vendorManagementService`. The response is handled to
-   * display a toast notification for success or error.
-   *
-   * If the form is not valid, the form controls are marked as touched to
-   * display validation errors.
-   */
   public addNewInvoice(): void {
     if (this.newInvoiceFormGroup.valid) {
       const formValue = this.newInvoiceFormGroup.value;
@@ -311,7 +281,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
         gst_rate: formValue.gst_rate ?? 5,
         gross_amount: 0,
         description: formValue.description ?? '',
-        publication_id: this.vendorId(),
+        publication_id: this.publicationId(),
       };
       requestPayload.gross_amount =
         requestPayload.amount +
@@ -347,7 +317,7 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
             complete: () => {
               this.isAddInvoiceDialogOpen = false;
               this.newInvoiceFormGroup.reset();
-              this.fetchVendorDetails();
+              this.fetchPublicationDetails();
             },
           })
       );
@@ -367,17 +337,6 @@ export class VendorDetailsComponent implements OnInit, OnDestroy {
     this.gridApi.exportDataAsCsv();
   }
 
-  /**
-   * Confirms with the user whether or not they want to delete the selected
-   * invoices. If the user confirms, the invoices are deleted by calling the
-   * `deleteInvoices` method.
-   *
-   * The confirmation dialog is displayed with a message asking the user to
-   * confirm the deletion, and buttons for 'Cancel' and 'Delete'. If the user
-   * clicks 'Cancel', a toast notification is displayed with a message indicating
-   * that the deletion was cancelled. If the user clicks 'Delete', the
-   * `deleteInvoices` method is called to delete the selected invoices.
-   */
   public confirmDeleteInvoices(): void {
     this.confirmationService.confirm({
       message: `Are you sure that you want to delete these invoices?`,

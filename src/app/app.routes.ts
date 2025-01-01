@@ -12,12 +12,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: "vendor/:id",
+    path: "publication/:id",
     loadComponent: () =>
-      import("./components/vendor-details/vendor-details.component").then(
-        (c) => c.VendorDetailsComponent,
+      import("./components/publication-details/publication-details.component").then(
+        (c) => c.PublicationDetailsComponent,
       ),
-    title: "Vendors",
+    title: "Publications",
     canActivate: [AuthGuard],
   },
   {
