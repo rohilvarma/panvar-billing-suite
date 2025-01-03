@@ -27,10 +27,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { RippleModule } from 'primeng/ripple';
 import { TextareaModule } from 'primeng/textarea';
 import { Subscription } from 'rxjs';
-import {
-  Publication,
-  PublicationDetails,
-} from '../../interfaces/publications';
+import { Publication, PublicationDetails } from '../../interfaces/publications';
 import { PublicationService } from '../../services/publication/publication.service';
 import { ToastService } from '../../services/toast/toast.service';
 import {
@@ -97,6 +94,18 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     this.fetchPublication();
   }
 
+  /**
+   * Initialise the grid options. This function sets the grid options to display
+   * the invoice details. It sets the column definitions, the pagination,
+   * the row selection, and the value formatters for the columns.
+   *
+   * The row selection is set to allow multi-row selection, and the onSelectionChanged
+   * event is used to update the delete button's state. The button is disabled if no
+   * rows are selected.
+   *
+   * The column definitions are set to display the invoice details in the correct
+   * format. The value formatters are used to format the dates and amounts.
+   */
   private initialiseGridOptions(): void {
     this.gridOptions = {
       defaultColDef: {
@@ -170,6 +179,16 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     };
   }
 
+  /**
+   * Fetches the publication details and updates the publicationDetails signal
+   * with the response.
+   *
+   * If the request is successful, the publicationDetails signal is set with
+   * the fetched data. If the response contains an error, a toast is displayed
+   * with the error message. In case of a request error, a toast is added with
+   * a default error message. On completion, the grid data is updated with the
+   * publication details.
+   */
   private fetchPublicationDetails(): void {
     this.subscriptionManager.add(
       this.publicationSerivce
@@ -202,6 +221,14 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Fetches the publication data and updates the publication signal with the response.
+   * If the request fails, a toast is added with the error message.
+   * If the request errors, a toast is added with the default error message.
+   * If the request is successful and the publication is not found, the user is
+   * redirected to the dashboard and a toast is added with the error message.
+   * The publication details are then refetched.
+   */
   private fetchPublication(): void {
     this.subscriptionManager.add(
       this.publicationSerivce
@@ -235,6 +262,16 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Deletes the selected invoices from the database.
+   *
+   * This method is called when the user clicks the "Delete Invoice" button.
+   * It retrieves the selected invoices from the grid and makes a request to
+   * the PublicationService to delete them. If the request fails or errors,
+   * a toast is added with the error message. If the request is successful,
+   * a toast is added with a success message, and the publication details are
+   * refetched.
+   */
   private deleteInvoices(): void {
     const selectedIds = this.gridApi.getSelectedRows().map((row) => row.id);
     this.subscriptionManager.add(
@@ -269,6 +306,17 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     this.isAddInvoiceDialogOpen = true;
   }
 
+  /**
+   * Submits the 'Add Invoice' form and attempts to add a new invoice
+   * to the database.
+   *
+   * If the form is valid, the submission is sent to the PublicationService
+   * to be added to the database. If the request is successful, a toast is
+   * added with a success message, and the publication details are refetched.
+   * If the request fails or errors, a toast is added with the error message.
+   * If the form is invalid, all form controls are marked as touched to show
+   * the validation errors.
+   */
   public addNewInvoice(): void {
     if (this.newInvoiceFormGroup.valid) {
       const formValue = this.newInvoiceFormGroup.value;
@@ -337,6 +385,15 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
     this.gridApi.exportDataAsCsv();
   }
 
+  /**
+   * Opens a confirmation dialog for deleting invoices.
+   *
+   * This method uses the confirmation service to display a dialog
+   * asking the user to confirm the deletion of selected invoices.
+   * If the user confirms, the selected invoices are deleted.
+   * If the user cancels, a toast message indicating the cancellation
+   * is displayed.
+   */
   public confirmDeleteInvoices(): void {
     this.confirmationService.confirm({
       message: `Are you sure that you want to delete these invoices?`,

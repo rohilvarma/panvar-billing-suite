@@ -40,7 +40,7 @@ type NewPublication = {
 type StateType = {
   label: string;
   value: boolean;
-}
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -89,6 +89,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.fetchAllPublications();
   }
 
+  /**
+   * Fetches all publications and updates the publicationDetails signal with the response.
+   * If the request fails, a toast is added with the error message.
+   * If the request errors, a toast is added with the default error message.
+   * The isLoadingPublications signal is toggled at the start and end of the function.
+   */
   private fetchAllPublications(): void {
     this.toggleIsLoadingPublications();
     this.subscriptionManager.add(
@@ -121,14 +127,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Toggles the isLoadingPublications signal, which is used to show the loading animation
+   * while the publications are being fetched.
+   */
   private toggleIsLoadingPublications(): void {
     this.isLoadingPublications = !this.isLoadingPublications;
   }
 
+  /**
+   * Opens the dialog for adding a new publication.
+   *
+   * Sets the 'isAddPublicationDialogVisible' flag to true, which triggers the display
+   * of the 'Add Publication' dialog modal in the UI.
+   */
   public showAddPublicationDialog(): void {
     this.isAddPublicationDialogVisible = true;
   }
 
+  /**
+   * Submits the 'Add Publication' form and attempts to add a new publication
+   * to the database.
+   *
+   * If the form is valid, the submission is sent to the PublicationService
+   * to be added to the database. If the request is successful, a toast is
+   * added with a success message, and the publication list is refetched.
+   * If the request fails or errors, a toast is added with the error message.
+   * If the form is invalid, all form controls are marked as touched to show
+   * the validation errors.
+   */
   public addNewPublication(): void {
     if (this.newPublicationForm.valid) {
       const newPublication: NewPublication = {
@@ -173,6 +200,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Deletes a publication from the database.
+   *
+   * Calls the PublicationService to delete a publication by its ID.
+   * If the request fails or errors, a toast is added with the error message.
+   * If the request is successful, a toast is added with a success message,
+   * and the publication list is refetched.
+   *
+   * @param publication The publication to be deleted.
+   */
   private deletePublication(publication: Publication): void {
     this.subscriptionManager.add(
       this.publicationService.deletePublicationById(publication.id).subscribe({
@@ -195,6 +232,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Opens a confirmation dialog to delete a publication and its invoices.
+   *
+   * This function triggers a dialog asking the user to confirm the deletion
+   * of a specified publication. If the user accepts, the publication and its
+   * associated invoices are deleted. If the user rejects, a cancellation
+   * toast message is displayed.
+   *
+   * @param publication - The publication to be deleted, which includes its
+   * name and associated invoices.
+   */
   public confirmDeletePublication(publication: Publication): void {
     this.confirmationService.confirm({
       message: `Are you sure that you want to delete publication, <b>${publication.publication_name}</b>, and all of its invoices?`,
