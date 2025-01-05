@@ -17,6 +17,10 @@ export enum PublicationTables {
   PUBLICATION_DETAILS = 'publication_details',
 }
 
+export enum ClientTables {
+  CLIENTS = 'clients',
+}
+
 export const toastMessages = {
   SUCCESS: {
     TITLE: {
@@ -28,6 +32,7 @@ export const toastMessages = {
       NEW_INVOICE: 'New Invoice Added',
       DELETE_PUBLICATION: 'Publication Deleted',
       DELETE_INVOICE: 'Invoice Deleted',
+      DELETE_CLIENT: 'Client Deleted',
     },
     MESSAGE: {
       LOGOUT: 'You have successfully logged out.',
@@ -37,6 +42,7 @@ export const toastMessages = {
       NEW_INVOICE: 'Invoice added successfully.',
       DELETE_PUBLICATION: 'Publication deleted successfully.',
       DELETE_INVOICE: 'Selected Invoices have been deleted successfully.',
+      DELETE_CLIENT: 'Client deleted successfully.',
     },
   },
   ERROR: {
