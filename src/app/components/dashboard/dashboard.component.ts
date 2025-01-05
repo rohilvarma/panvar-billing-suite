@@ -23,20 +23,14 @@ import { Dialog } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
 import { Subscription } from 'rxjs';
-import { Publication } from '../../interfaces/publications';
+import { NewPublication, Publication } from '../../interfaces/publications';
 import { ToastService } from '../../services/toast/toast.service';
 
 import { toastMessages, ToastSeverity } from '../../utils/constants';
 import { counterArray } from '../../utils/helper';
 import { PublicationService } from '../../services/publication/publication.service';
 import { ClientService } from '../../services/client/client.service';
-import { Client } from '../../interfaces/clients';
-
-type NewPublication = {
-  name: string;
-  publication_name: string;
-  user_id?: string;
-};
+import { Client, NewClient } from '../../interfaces/clients';
 
 type StateType = {
   label: string;
@@ -72,7 +66,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public clientDetails: WritableSignal<any> = signal<any>([]);
 
   // Dashboard state management
-  public isLoadingPublications: boolean = false;
+  public isDashboardLoading: boolean = false;
   public isPublicationState: boolean = true;
   public stateOptions: any[] = [
     { label: 'Publications', value: true },
@@ -82,8 +76,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Add new publication form
   public isAddPublicationDialogVisible: boolean = false;
   public newPublicationForm: FormGroup = new FormGroup({
-    name: new FormControl(null, [Validators.required]),
     publication_name: new FormControl(null, [Validators.required]),
+  });
+
+  // Add new client form
+  public isAddClientDialogVisible: boolean = false;
+  public newClientForm: FormGroup = new FormGroup({
+    client_name: new FormControl(null, [Validators.required]),
   });
 
   private subscriptionManager: Subscription = new Subscription();
@@ -98,8 +97,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.fetchAllClients();
   }
 
+  /**
+   * Fetches all clients from the database and updates the `clientDetails` signal with the results.
+   * If the request is successful, the `clientDetails` signal is updated with the array of clients.
+   * If the request fails, the `clientDetails` signal is updated with an empty array, and an error toast is displayed.
+   */
   private fetchAllClients(): void {
-    this.toggleIsLoadingPublications();
+    this.toggleIsDashboardLoading();
     this.subscriptionManager.add(
       this.clientService.getAllClients().subscribe({
         next: (response: PostgrestSingleResponse<Client[]>) => {
@@ -124,7 +128,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.clientDetails.set([]);
         },
         complete: () => {
-          this.toggleIsLoadingPublications();
+          this.toggleIsDashboardLoading();
         },
       })
     )
@@ -137,7 +141,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * The isLoadingPublications signal is toggled at the start and end of the function.
    */
   private fetchAllPublications(): void {
-    this.toggleIsLoadingPublications();
+    this.toggleIsDashboardLoading();
     this.subscriptionManager.add(
       this.publicationService.getAllPublications().subscribe({
         next: (response: PostgrestSingleResponse<Publication[]>) => {
@@ -162,7 +166,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.publicationDetails.set([]);
         },
         complete: () => {
-          this.toggleIsLoadingPublications();
+          this.toggleIsDashboardLoading();
         },
       })
     );
@@ -200,6 +204,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Deletes a client from the database.
+   *
+   * Calls the ClientService to delete a client by its ID.
+   * If the request fails or errors, a toast is added with the error message.
+   * If the request is successful, a toast is added with a success message,
+   * and the client list is refetched.
+   *
+   * @param client The client to be deleted.
+   */
   private deleteClient(client: Client): void {
     this.subscriptionManager.add(
       this.clientService.deleteClientById(client.id).subscribe({
@@ -223,11 +237,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggles the isLoadingPublications signal, which is used to show the loading animation
-   * while the publications are being fetched.
+   * Toggles the isDashboardLoading signal, which is used to show the loading animation
+   * while the publications and clients are being fetched.
    */
-  private toggleIsLoadingPublications(): void {
-    this.isLoadingPublications = !this.isLoadingPublications;
+  private toggleIsDashboardLoading(): void {
+    this.isDashboardLoading = !this.isDashboardLoading;
   }
 
   /**
@@ -238,6 +252,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   public showAddPublicationDialog(): void {
     this.isAddPublicationDialogVisible = true;
+  }
+
+  public showAddClientDialog(): void {
+    this.isAddClientDialogVisible = true;
   }
 
   /**
@@ -254,7 +272,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public addNewPublication(): void {
     if (this.newPublicationForm.valid) {
       const newPublication: NewPublication = {
-        name: this.newPublicationForm.get('name')?.value!,
         publication_name:
           this.newPublicationForm.get('publication_name')?.value!,
       };
@@ -291,6 +308,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     } else {
       this.newPublicationForm.markAllAsTouched();
+    }
+  }
+
+  /**
+   * Submits the 'Add Client' form and attempts to add a new client
+   * to the database.
+   *
+   * If the form is valid, the submission is sent to the ClientService
+   * to be added to the database. If the request is successful, a toast is
+   * added with a success message, and the client list is refetched.
+   * If the request fails or errors, a toast is added with the error message.
+   * If the form is invalid, all form controls are marked as touched to show
+   * the validation errors.
+   */
+  public addNewClient(): void {
+    if (this.newClientForm.valid) {
+      const newClient: NewClient = {
+        client_name: this.newClientForm.get('client_name')?.value!,
+      };
+      this.subscriptionManager.add(
+        this.clientService.addClient(newClient).subscribe({
+          next: (response: PostgrestSingleResponse<Client[]>) => {
+            const { error } = response;
+            if (error) {
+              this.toastService.addToast(
+                ToastSeverity.ERROR,
+                error.name,
+                error.message,
+                error.code
+              );
+            }
+          },
+          error: (error) => {
+            this.toastService.addToast(
+              ToastSeverity.ERROR,
+              toastMessages.ERROR.TITLE.CONTACT_ADMIN,
+              toastMessages.ERROR.MESSAGE.CONTACT_ADMIN
+            );
+          },
+          complete: () => {
+            this.isAddClientDialogVisible = false;
+            this.fetchAllClients();
+            this.toastService.addToast(
+              ToastSeverity.SUCCESS,
+              toastMessages.SUCCESS.TITLE.ADD_CLIENT,
+              toastMessages.SUCCESS.MESSAGE.ADD_CLIENT
+            );
+          },
+        })
+      );
+    } else {
+      this.newClientForm.markAllAsTouched();
     }
   }
 

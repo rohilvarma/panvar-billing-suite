@@ -7,6 +7,11 @@ export interface Publication {
   publication_name: string;
 }
 
+export interface NewPublication {
+  publication_name: string;
+  user_id?: string;
+}
+
 export interface PublicationResponse {
   error: PostgrestError;
   data: Publication[];

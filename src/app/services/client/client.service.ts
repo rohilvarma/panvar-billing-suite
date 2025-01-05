@@ -3,7 +3,7 @@ import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from '../auth/auth.service';
 import { from, Observable } from 'rxjs';
 import { ClientTables } from '../../utils/constants';
-import { Client } from '../../interfaces/clients';
+import { Client, NewClient } from '../../interfaces/clients';
 
 @Injectable({
   providedIn: 'root',
@@ -34,4 +34,14 @@ export class ClientService {
         .eq('user_id', this.auth.userId)
     );
   } 
+
+  public addClient(requestPayload: NewClient): Observable<PostgrestSingleResponse<Client[]>> {
+    requestPayload['user_id'] = this.auth.userId ?? '';
+    return from(
+      this.client
+        .from(ClientTables.CLIENTS)
+        .insert([requestPayload])
+        .select()
+    );
+  }
 }
