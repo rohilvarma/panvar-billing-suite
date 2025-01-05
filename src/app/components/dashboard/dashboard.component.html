@@ -18,66 +18,95 @@
     <p-button
       [label]="this.isPublicationState ? 'Add Publication' : 'Add Client'"
       icon="pi pi-plus"
-      [disabled]="this.isLoadingPublications"
+      [disabled]="this.isDashboardLoading"
       size="small"
       iconPos="right"
-      (click)="this.showAddPublicationDialog()"
+      (click)="
+        this.isPublicationState
+          ? this.showAddPublicationDialog()
+          : this.showAddClientDialog()
+      "
     />
   </div>
   <div class="grid grid-cols-4 gap-2">
-    @if (this.isPublicationState) {
-      @if (this.isLoadingPublications) { @for (_ of this.counterArray(3); track
-        $index) {
-        <div class="bg-white rounded-lg p-4">
-          <p-skeleton styleClass="mb-2" />
-          <p-skeleton styleClass="mb-2" />
-        </div>
-        } } @else { @if(this.publicationDetails().length === 0) {
-        <h2
-          class="text-2xl text-gray-500 font-semibold text-center col-span-4 mt-32"
-        >
-          Get started by adding your first publication!
-        </h2>
-        } @else { @for (item of this.publicationDetails(); track $index) {
-        <div class="bg-white rounded-lg p-4">
-          <div class="flex items-center justify-between">
-            <div
-              class="font-bold fs-5 cursor-pointer"
-              [routerLink]="['/publication', item.id]"
-            >
-              {{ item.publication_name }}
-            </div>
-            <div class="cursor-pointer">
-              <i
-                class="pi pi-trash"
-                style="color: red"
-                (click)="this.confirmDeletePublication(item)"
-              ></i>
-            </div>
+    @if (this.isPublicationState) { 
+      @if (this.isDashboardLoading) { 
+        @for (_ of this.counterArray(3); track $index) {
+          <div class="bg-white rounded-lg p-4">
+            <p-skeleton styleClass="mb-2" />
+            <p-skeleton styleClass="mb-2" />
           </div>
-        </div>
-        } } }
-    }
-    @else {
-      @for (item of this.clientDetails(); track $index) {
-        <div class="bg-white rounded-lg p-4">
-          <div class="flex items-center justify-between">
-            <div
-              class="font-bold fs-5 cursor-pointer"
-              [routerLink]="['/client', item.id]"
-            >
-              {{ item.client_name }}
-            </div>
-            <div class="cursor-pointer">
-              <i
-                class="pi pi-trash"
-                style="color: red"
-                (click)="this.confirmDeleteClient(item)"
-              ></i>
-            </div>
-          </div>
-        </div>
         } 
+      } 
+      @else { 
+        @if(this.publicationDetails().length === 0) {
+          <h2
+            class="text-2xl text-gray-500 font-semibold text-center col-span-4 mt-32"
+          >
+            Get started by adding your first publication!
+          </h2>
+        } 
+        @else { 
+          @for (item of this.publicationDetails(); track $index) {
+            <div class="bg-white rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div
+                  class="font-bold fs-5 cursor-pointer"
+                  [routerLink]="['/publication', item.id]"
+                >
+                  {{ item.publication_name }}
+                </div>
+                <div class="cursor-pointer">
+                  <i
+                    class="pi pi-trash"
+                    style="color: red"
+                    (click)="this.confirmDeletePublication(item)"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          } 
+        } 
+      } 
+    } @else { 
+      @if (this.isDashboardLoading) { 
+        @for (_ of this.counterArray(3); track $index) {
+          <div class="bg-white rounded-lg p-4">
+            <p-skeleton styleClass="mb-2" />
+            <p-skeleton styleClass="mb-2" />
+          </div>
+        } 
+      }
+      @else {
+        @if(this.clientDetails().length === 0) {
+          <h2
+            class="text-2xl text-gray-500 font-semibold text-center col-span-4 mt-32"
+          >
+            Get started by adding your first Client!
+          </h2>
+        }
+        @else {
+          @for (item of this.clientDetails(); track $index) {
+            <div class="bg-white rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div
+                  class="font-bold fs-5 cursor-pointer"
+                  [routerLink]="['/client', item.id]"
+                >
+                  {{ item.client_name }}
+                </div>
+                <div class="cursor-pointer">
+                  <i
+                    class="pi pi-trash"
+                    style="color: red"
+                    (click)="this.confirmDeleteClient(item)"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          } 
+        }
+      }
     }
   </div>
 </section>
@@ -89,20 +118,6 @@
   [style]="{ width: '50rem' }"
 >
   <form [formGroup]="this.newPublicationForm" class="">
-    <div class="mb-6">
-      <label for="name" class="font-bold">Name:</label>
-      <input
-        pInputText
-        formControlName="name"
-        id="name"
-        type="text"
-        class="w-full"
-      />
-      @if (this.newPublicationForm.get('name')?.invalid &&
-      this.newPublicationForm.get('name')?.touched) {
-      <small class="text-red-500">Please enter a valid name.</small>
-      }
-    </div>
     <div class="mb-6">
       <label for="publication_name" class="font-bold">Publication Name:</label>
       <input
@@ -117,9 +132,37 @@
       <small class="text-red-500">Please enter a valid publication name.</small>
       }
     </div>
-    <div class="">
+    <div class="flex items-center justify-end">
       <p-button label="Add" [severity]="" (click)="this.addNewPublication()" />
     </div>
   </form>
 </p-dialog>
+
+<p-dialog
+  header="Add New Client"
+  [modal]="true"
+  [(visible)]="this.isAddClientDialogVisible"
+  [style]="{ width: '50rem' }"
+>
+  <form [formGroup]="this.newClientForm" class="">
+    <div class="mb-6">
+      <label for="client_name" class="font-bold">Client Name:</label>
+      <input
+        pInputText
+        formControlName="client_name"
+        id="client_name"
+        type="text"
+        class="w-full"
+      />
+      @if (this.newClientForm.get('client_name')?.invalid &&
+      this.newClientForm.get('client_name')?.touched) {
+      <small class="text-red-500">Please enter a valid client name.</small>
+      }
+    </div>
+    <div class="flex items-center justify-end">
+      <p-button label="Add" (click)="this.addNewClient()" />
+    </div>
+  </form>
+</p-dialog>
+
 <p-confirmdialog />

@@ -2,7 +2,11 @@ import { inject, Injectable } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
 import { from, Observable } from 'rxjs';
-import { Publication, PublicationDetails } from '../../interfaces/publications';
+import {
+  NewPublication,
+  Publication,
+  PublicationDetails,
+} from '../../interfaces/publications';
 import { PublicationTables } from '../../utils/constants';
 
 @Injectable({
@@ -35,17 +39,19 @@ export class PublicationService {
   /**
    * Adds a new publication to the database.
    *
-   * @param requestPayload A payload with the required fields for a publication:
-   *                       - name: The name of the publication.
-   *                       - publication_name: The name of the publication as it appears in the publication.
-   *                       - user_id: The ID of the user associated with the publication. If not provided, the current user's ID is used.
-   * @returns An observable that emits a PostgrestSingleResponse containing an array of Publication objects.
+   * This method adds a new publication to the database with the specified
+   * request payload. It ensures that only the details associated with the
+   * current user are added.
+   *
+   * @param requestPayload The NewPublication object containing the details
+   * of the new publication.
+   * @returns An observable that emits a PostgrestSingleResponse containing the
+   * newly added publication if the addition was successful, or an error
+   * if the addition failed.
    */
-  public addPublication(requestPayload: {
-    name: string;
-    publication_name: string;
-    user_id?: string;
-  }): Observable<PostgrestSingleResponse<Publication[]>> {
+  public addPublication(
+    requestPayload: NewPublication
+  ): Observable<PostgrestSingleResponse<Publication[]>> {
     requestPayload['user_id'] = this.auth.userId ?? '';
     return from(
       this.client

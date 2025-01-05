@@ -4,3 +4,8 @@ export interface Client {
   client_name: string;
   email: string;
 }
+
+export interface NewClient {
+  client_name: string;
+  user_id?: string;
+}
