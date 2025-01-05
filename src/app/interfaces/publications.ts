@@ -1,16 +1,14 @@
-import {PostgrestError} from '@supabase/supabase-js';
+import { PostgrestError } from '@supabase/supabase-js';
 
 export interface Publication {
   id: number;
-  created_at: Date;
   user_id: string;
   name: string;
-  email: string;
   publication_name: string;
 }
 
 export interface PublicationResponse {
-  error: PostgrestError
+  error: PostgrestError;
   data: Publication[];
   count: any;
   status: number;

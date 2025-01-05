@@ -40,7 +40,7 @@
         </h2>
         } @else { @for (item of this.publicationDetails(); track $index) {
         <div class="bg-white rounded-lg p-4">
-          <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center justify-between">
             <div
               class="font-bold fs-5 cursor-pointer"
               [routerLink]="['/publication', item.id]"
@@ -55,14 +55,29 @@
               ></i>
             </div>
           </div>
-          <small class="text-stone-400 text-end">
-            <div class="text-stone-600 italic">- {{ item.email }}</div>
-          </small>
         </div>
         } } }
     }
     @else {
-      this is client section
+      @for (item of this.clientDetails(); track $index) {
+        <div class="bg-white rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div
+              class="font-bold fs-5 cursor-pointer"
+              [routerLink]="['/client', item.id]"
+            >
+              {{ item.client_name }}
+            </div>
+            <div class="cursor-pointer">
+              <i
+                class="pi pi-trash"
+                style="color: red"
+                (click)="this.confirmDeleteClient(item)"
+              ></i>
+            </div>
+          </div>
+        </div>
+        } 
     }
   </div>
 </section>
@@ -100,23 +115,6 @@
       @if (this.newPublicationForm.get('publication_name')?.invalid &&
       this.newPublicationForm.get('publication_name')?.touched) {
       <small class="text-red-500">Please enter a valid publication name.</small>
-      }
-    </div>
-    <div class="mb-6">
-      <label for="email" class="font-bold">Email:</label>
-      <input
-        pInputText
-        formControlName="email"
-        id="email"
-        type="email"
-        class="w-full"
-      />
-      @if (this.newPublicationForm.get('email')?.hasError('required') &&
-      this.newPublicationForm.get('email')?.touched) {
-      <small class="text-red-500">Please enter your email.</small>
-      } @else if (this.newPublicationForm.get('email')?.hasError('email') &&
-      this.newPublicationForm.get('email')?.touched) {
-      <small class="text-red-500">Please enter a valid email address.</small>
       }
     </div>
     <div class="">
