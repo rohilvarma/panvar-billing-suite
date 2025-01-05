@@ -33,6 +33,7 @@ export const toastMessages = {
       DELETE_PUBLICATION: 'Publication Deleted',
       DELETE_INVOICE: 'Invoice Deleted',
       DELETE_CLIENT: 'Client Deleted',
+      ADD_CLIENT: 'New Client Added',
     },
     MESSAGE: {
       LOGOUT: 'You have successfully logged out.',
@@ -43,6 +44,7 @@ export const toastMessages = {
       DELETE_PUBLICATION: 'Publication deleted successfully.',
       DELETE_INVOICE: 'Selected Invoices have been deleted successfully.',
       DELETE_CLIENT: 'Client deleted successfully.',
+      ADD_CLIENT: 'Client added successfully.',
     },
   },
   ERROR: {
