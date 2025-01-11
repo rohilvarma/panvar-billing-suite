@@ -1,9 +1,15 @@
 <section id="header">
+  <div class="text-xl mb-2">
+    <span class="font-bold"> Publication Name: </span>
+    <span class="font-medium">
+      {{ this.publication().publication_name }}
+    </span>
+  </div>
   <div class="flex items-center justify-between">
-    <div class="text-xl">
-      <span class="font-bold"> Publication Name: </span>
-      <span class="font-medium">
-        {{ this.publication().publication_name }}
+    <div class="">
+      Total Business:
+      <span class="text-green-600">
+        {{ this.totalBusiness | currency:'INR':'symbol':'1.2-2':'en-IN' }}
       </span>
     </div>
     <div class="flex items-center gap-1">

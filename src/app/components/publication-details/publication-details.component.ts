@@ -1,4 +1,4 @@
-import { formatCurrency } from '@angular/common';
+import { CurrencyPipe, formatCurrency } from '@angular/common';
 import {
   Component,
   inject,
@@ -51,6 +51,7 @@ import { formatDate } from '../../utils/helper';
     AgGridAngular,
     FormsModule,
     ReactiveFormsModule,
+    CurrencyPipe
   ],
   templateUrl: './publication-details.component.html',
   styleUrl: './publication-details.component.css',
@@ -63,6 +64,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
   public publicationDetails: WritableSignal<PublicationDetails[]> = signal<
     PublicationDetails[]
   >([]);
+  public totalBusiness: number = 0;
 
   public isAddInvoiceDialogOpen: boolean = false;
   public newInvoiceFormGroup = new FormGroup({
@@ -146,7 +148,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           field: 'amount',
           headerName: 'Amount',
           valueFormatter: (params) => {
-            return formatCurrency(params.value, 'en-IN', 'Rs. ');
+            return formatCurrency(params.value, 'en-IN', '₹ ');
           },
         },
         {
@@ -160,7 +162,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           field: 'gross_amount',
           headerName: 'Gross Amount',
           valueFormatter: (params) => {
-            return formatCurrency(params.value, 'en-IN', 'Rs. ');
+            return formatCurrency(params.value, 'en-IN', '₹ ');
           },
         },
         {
@@ -216,9 +218,23 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           },
           complete: () => {
             this.gridApi.setGridOption('rowData', this.publicationDetails());
+            this.calculateTotalBusiness();
           },
         })
     );
+  }
+
+  /**
+   * Calculates the total business by summing up the gross amounts of all
+   * the invoice details associated with the current publication.
+   *
+   * The total business is stored in the totalBusiness property.
+   */
+  private calculateTotalBusiness(): void {
+    this.totalBusiness = 0;
+    this.publicationDetails().forEach((detail) => {
+      this.totalBusiness += detail.gross_amount;
+    })
   }
 
   /**
