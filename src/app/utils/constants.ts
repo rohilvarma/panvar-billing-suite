@@ -19,6 +19,7 @@ export enum PublicationTables {
 
 export enum ClientTables {
   CLIENTS = 'clients',
+  CLIENT_DETAILS = 'client_details',
 }
 
 export const toastMessages = {

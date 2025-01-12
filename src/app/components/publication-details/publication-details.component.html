@@ -1,5 +1,8 @@
 <section id="header">
-  <div class="text-xl mb-2">
+  <div class="cursor-pointer flex items-center gap-2 text-blue-300" type="button" routerLink="/">
+    <i class="pi pi-arrow-left"></i> <span class="italic">Home</span>
+  </div>
+  <div class="text-xl my-2">
     <span class="font-bold"> Publication Name: </span>
     <span class="font-medium">
       {{ this.publication().publication_name }}
@@ -9,7 +12,7 @@
     <div class="">
       Total Business:
       <span class="text-green-600">
-        {{ this.totalBusiness | currency:'INR':'symbol':'1.2-2':'en-IN' }}
+        {{ this.totalBusiness }}
       </span>
     </div>
     <div class="flex items-center gap-1">
