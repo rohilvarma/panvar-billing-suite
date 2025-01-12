@@ -1,1 +1,153 @@
-<p>client-details works!</p>
+<section id="header">
+  <div class="cursor-pointer flex items-center gap-2 text-blue-300" type="button" routerLink="/">
+    <i class="pi pi-arrow-left"></i> <span class="italic">Home</span>
+  </div>
+  <div class="text-xl my-2">
+    <span class="font-bold"> Client Name: </span>
+    <span class="font-medium">
+      {{ this.client().client_name }}
+    </span>
+  </div>
+  <div class="flex items-center justify-between">
+    <div class="">
+      Total Business:
+      <span class="text-green-600">
+        {{ this.totalBusiness }}
+      </span>
+    </div>
+    <div class="flex items-center gap-1">
+      <p-button
+        pRipple
+        label="Delete Invoice"
+        icon="pi pi-trash"
+        iconPos="left"
+        severity="danger"
+        [outlined]="true"
+        [disabled]="this.deleteInvoiceIsDisabled"
+        size="small"
+        (click)="this.confirmDeleteInvoices()"
+      />
+      <p-button
+        pRipple
+        label="Export as CSV"
+        icon="pi pi-file-excel"
+        iconPos="left"
+        severity="info"
+        [disabled]="this.clientDetails().length === 0"
+        size="small"
+        (click)="this.exportAsCSV()"
+      />
+      <p-button
+        pRipple
+        label="New Invoice"
+        icon="pi pi-plus"
+        iconPos="left"
+        size="small"
+        (click)="this.showAddInvoiceDialog()"
+      />
+    </div>
+  </div>
+</section>
+
+<section id="clientDetailsGrid" class="mt-2">
+  <ag-grid-angular
+    class="ag-theme-quartz"
+    style="height: 600px"
+    [gridOptions]="this.gridOptions"
+  />
+</section>
+
+<p-dialog
+  header="Add New Invoice"
+  [modal]="true"
+  [focusOnShow]="false"
+  styleClass="w-1/2"
+  [(visible)]="isAddInvoiceDialogOpen"
+>
+  <form
+    [formGroup]="this.newInvoiceFormGroup"
+    (ngSubmit)="this.addNewInvoice()"
+  >
+    <div class="grid grid-cols-2 gap-4">
+      <div class="">
+        <label for="invoice_no">Invoice Number</label>
+        <input
+          type="text"
+          pInputText
+          class="w-full mt-2"
+          id="invoice_no"
+          formControlName="invoice_no"
+        />
+        @if (this.newInvoiceFormGroup.get('invoice_no')?.touched &&
+        this.newInvoiceFormGroup.get('invoice_no')?.invalid) {
+        <small class="text-red-500">Invoice Number is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="invoice_date">Invoice Date</label>
+        <input
+          type="date"
+          pInputText
+          class="w-full mt-2"
+          id="invoice_date"
+          formControlName="invoice_date"
+        />
+        @if (this.newInvoiceFormGroup.get('invoice_date')?.touched &&
+        this.newInvoiceFormGroup.get('invoice_date')?.invalid) {
+        <small class="text-red-500">Date is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="amount">Amount</label>
+        <input
+          type="number"
+          pInputText
+          class="w-full mt-2"
+          id="amount"
+          formControlName="amount"
+        />
+        @if (this.newInvoiceFormGroup.get('amount')?.touched &&
+        this.newInvoiceFormGroup.get('amount')?.invalid) {
+        <small class="text-red-500">Amount is required.</small>
+        }
+      </div>
+
+      <div class="">
+        <label for="amount">GST Rate</label>
+        <div class="flex gap-4 mt-3">
+          <div class="flex items-center">
+            <p-radiobutton value="5" formControlName="gst_rate" inputId="5%" />
+            <label for="5%" class="ml-2">5%</label>
+          </div>
+
+          <div class="flex items-center">
+            <p-radiobutton
+              value="18"
+              formControlName="gst_rate"
+              inputId="18%"
+            />
+            <label for="18%" class="ml-2">18%</label>
+          </div>
+        </div>
+        @if (this.newInvoiceFormGroup.get('gst_rate')?.touched &&
+        this.newInvoiceFormGroup.get('gst_rate')?.invalid) {
+        <small class="text-red-500">GST Rate is required</small>
+        }
+      </div>
+
+    </div>
+
+    <div class="flex justify-end mt-2">
+      <p-button
+        label="Add"
+        severity="contrast"
+        icon="pi pi-check"
+        iconPos="right"
+        type="submit"
+      />
+    </div>
+  </form>
+</p-dialog>
+<p-confirmdialog />

@@ -1,4 +1,3 @@
-import { formatCurrency } from '@angular/common';
 import {
   Component,
   inject,
@@ -14,7 +13,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridOptions, GridReadyEvent } from 'ag-grid-community';
@@ -35,7 +34,7 @@ import {
   toastMessages,
   ToastSeverity,
 } from '../../utils/constants';
-import { formatDate } from '../../utils/helper';
+import { formatAmount, formatDate } from '../../utils/helper';
 
 @Component({
   selector: 'app-publication-details',
@@ -43,14 +42,15 @@ import { formatDate } from '../../utils/helper';
   imports: [
     ButtonModule,
     ConfirmDialog,
-    RippleModule,
     Dialog,
+    RippleModule,
     InputTextModule,
     RadioButton,
     TextareaModule,
     AgGridAngular,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
   ],
   templateUrl: './publication-details.component.html',
   styleUrl: './publication-details.component.css',
@@ -63,6 +63,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
   public publicationDetails: WritableSignal<PublicationDetails[]> = signal<
     PublicationDetails[]
   >([]);
+  public totalBusiness: string = '';
 
   public isAddInvoiceDialogOpen: boolean = false;
   public newInvoiceFormGroup = new FormGroup({
@@ -146,7 +147,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           field: 'amount',
           headerName: 'Amount',
           valueFormatter: (params) => {
-            return formatCurrency(params.value, 'en-IN', 'Rs. ');
+            return formatAmount(params.value);
           },
         },
         {
@@ -160,7 +161,7 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           field: 'gross_amount',
           headerName: 'Gross Amount',
           valueFormatter: (params) => {
-            return formatCurrency(params.value, 'en-IN', 'Rs. ');
+            return formatAmount(params.value);
           },
         },
         {
@@ -216,9 +217,24 @@ export class PublicationDetailsComponent implements OnInit, OnDestroy {
           },
           complete: () => {
             this.gridApi.setGridOption('rowData', this.publicationDetails());
+            this.calculateTotalBusiness();
           },
         })
     );
+  }
+
+  /**
+   * Calculates the total business by summing up the gross amounts of all
+   * the invoice details associated with the current publication.
+   *
+   * The total business is stored in the totalBusiness property.
+   */
+  private calculateTotalBusiness(): void {
+    let total = 0;
+    this.publicationDetails().forEach((detail) => {
+      total += detail.gross_amount;
+    });
+    this.totalBusiness = formatAmount(total);
   }
 
   /**
